@@ -2,10 +2,11 @@
 // Created by matt on 9/06/19.
 //
 
-#include "strSplit.h"
+#ifndef INC_6771_STRSPLIT_H
+#define INC_6771_STRSPLIT_H
+
 #include <vector>
-#include <iostream>
-#include <iterator>
+#include <sstream>
 using namespace std;
 
 
@@ -23,10 +24,7 @@ void split4(const std::string& str, Container& cont,
   cont.push_back(str.substr(previous, current - previous));
 }
 
+void display_vector(const vector<string> &v);
 
 
-void display_vector(const vector<string> &v)
-{
-  std::copy(v.begin(), v.end(),
-            std::ostream_iterator<string>(std::cout, " "));
-}
+#endif //INC_6771_STRSPLIT_H
