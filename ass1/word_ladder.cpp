@@ -99,14 +99,24 @@ void FindPath(string start_word, string end_word, const unordered_set<string> & 
     setLevelForStartWord(start_word, prev_nodes, nodes_level);
 
     // end loop conditions:
-    // 1. no entry in queu  2. find the end_word and level is larger than shortest_level 
+    // 1. no entry in queue  2. find the end_word and level is larger than shortest_level 
     for( ; ( waiting_q.empty() == true ) ||
            ( found_path == 1 && current_level > shortest_level  ); ) {
         current = waiting_q.front();
         waiting_q.pop();
         // before do anthing further, check if this word is in set : finished_words
-        if ( finished_words.find(current) != finished_words.end() ) {
+        if( finished_words.find(current) != finished_words.end() ) {
             continue;
+        }
+        // update current_level if it can be higher
+        if( nodes_level.at(current) > current_level ) {
+            current_level = nodes_level.at(current);
+        }
+        // check if current is end_word
+        // the first time it finds, store it then freeze it
+        if( current.compare(end_word) == 0 && found_path == 0 )  {
+            found_path = 1;
+            shortest_level = current_level;
         }
         finished_words.insert(current);
         // from left to right
@@ -118,15 +128,22 @@ void FindPath(string start_word, string end_word, const unordered_set<string> & 
                 string child = current;
                 child.replace(i, 1, substitu);
 
+                /**
+                 * when go through loop, if child is current itself(possible)
+                 * then still push into queue. but when pop up, it will fail the if check
+                 * so everything is still ok
+                 */
                 // then check if this "word" exists in dictionary
                 if( CheckValid(child, words_dict) == true ) {
                     SetLevel(child, current, prev_nodes, nodes_level);
-                    waiting_q.push(); 
+                    waiting_q.push(child); 
                 }
             }
         }
         
     }
+
+    // debug ---------------------------------
 }
 
 
@@ -138,4 +155,11 @@ bool CheckValid(const string word, const unordered_set<string> & const words_dic
         return true;
     }
     return false;
+}
+
+/**
+ * after path is found, we need trace back and sort them
+ */
+void SortPath() {
+
 }
