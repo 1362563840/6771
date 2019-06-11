@@ -2,7 +2,9 @@
 #include <map>
 #include <unordered_map>
 #include <queue>
+#include <stack>
 #include <vector>
+#include <set>
 #include <unordered_set>
 #include <limits>
 #include <iostream>
@@ -100,8 +102,8 @@ void FindPath(string start_word, string end_word,const unordered_set<string> & w
 
   // end loop conditions:
   // 1. no entry in queue  2. find the end_word and level is larger than shortest_level
-  for( ; ( waiting_q.empty() == true ) ||
-      ( found_path == 1 && current_level > shortest_level  ); ) {
+  for( ; ( waiting_q.empty() != true ) &&
+    ( !( found_path == 1 && current_level > shortest_level ) ); ) {
     current = waiting_q.front();
     waiting_q.pop();
     // before do anthing further, check if this word is in set : finished_words
@@ -160,7 +162,7 @@ void display_map( const unordered_map<string, unordered_set<string> >& prev_node
         cout << "\n" << str;
       }
       else {
-        cout << str;
+        cout << str << ", ";
       }
       current_col++;
     }
@@ -181,6 +183,92 @@ bool CheckValid(string word,const unordered_set<string>& words_dict) {
 /**
  * after path is found, we need trace back and sort them
  */
-void SortPath() {
+// void SortPath(string start_word, string end_word,
+//                 const unordered_map<string, unordered_set<string> >& prev_nodes,
+//                 const unordered_map<string, int> nodes_level) {
+//     vector< vector<string> > paths;
+//     int how_many_paths;
+//     int shortest_hops = nodes_level.at(end_word);
+
+//     // before go through map, do something
+//     // insert end_word
+//     vector<string> temp = {end_word};
+//     paths.insert(paths.end(), temp);
+
+//     for( int i = 0 ; i < prev_nodes.at(end_word).size() ; i++ ) {
+//         vector<string> parent_copy = paths.at(0);
+//         if( i == 0 ) {
+//             te
+//         }
+//     }
+//     /**
+//      * use stack to find all path
+//      * 
+//      */
+//     for( int i = 1 ; i < shortest_hops ; i++ ) {
+//         vector<string> parent_copy = paths.at(0);
+
+//         for ()
+//     }
+
+// }
+
+void SortPath(string start_word, string end_word,
+                const unordered_map<string, unordered_set<string> >& prev_nodes,
+                const unordered_map<string, int> nodes_level) {
+    stack <string> stack_words;
+
+    int how_many_paths;
+    int current_path_level = 0;
+    vector <string> curr_path;
+    vector < vector<string> > all_paths;
+
+    stack_words.push(end_word);
+    /**
+     * use stack to find all path
+     * 
+     */
+    for( ; stack_words.empty() == false ; ) {
+        string curr = stack_words.top();
+        stack_words.pop();
+        // next hop, add it to current path
+        if( current_path_level < nodes_level.at(curr) ) {
+            // debug need to delete ----------------------
+            if( current_path_level + 1 != nodes_level.at(curr) ) {
+                cout << "error stack level is not correct\n";
+            }
+            // debug need to delete ----------------------
+            curr_path.insert( curr_path.end(), curr);
+            current_path_level++;
+        }
+        // in this situation, change the last entry in curr_path
+        else if( current_path_level == nodes_level.at(curr) ) {
+            //replace value
+            curr_path.at( current_path_level - 1 ) = curr;
+        }
+        // debug delete --------------------------------
+        else {
+            cout << "error check \n";
+            exit(1);
+        }
+        // debug delete --------------------------------
+        
+        // check if reaches the end_word
+        if() {
+
+        }
+
+        const unordered_set<string>& temp = prev_nodes.at(curr);
+        set<string> order;
+        // convert unorder_set to set
+        copy( temp.begin(), temp.end(), order.begin() );
+        
+        // add children to stack
+        for( const auto& word : order ) {
+            stack_words.push(word);
+        }
+
+        // 
+    }
 
 }

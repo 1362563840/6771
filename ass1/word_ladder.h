@@ -18,4 +18,6 @@ void SetLevel(string word, string prev
 bool CheckValid(string word,const unordered_set<string>& words_dict);
 
 void display_map( const unordered_map<string, unordered_set<string> >& prev_nodes);
+
+void SortPath();
 #endif  // ASSIGNMENTS_WL_WORD_LADDER_H_
