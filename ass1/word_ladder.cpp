@@ -244,7 +244,7 @@ bool CheckValid(string word,const unordered_set<string>& words_dict) {
 
 void SortPath(string start_word, string end_word,
                 const unordered_map<string, unordered_set<string> >& prev_nodes,
-                const unordered_map<string, int> nodes_level, 
+                const unordered_map<string, int>& nodes_level, 
                 vector < vector<string> >& all_paths) {
     stack <string> stack_words;
 
@@ -280,7 +280,7 @@ void SortPath(string start_word, string end_word,
         // in this situation, change the last entry in curr_path
         else if( current_path_level == nodes_level.at(curr) ) {
             //replace value
-            curr_path.at( how_many_vec - 1 ) = curr;
+            curr_path.at( 0 ) = curr;
         }
         // debug delete --------------------------------
         else {
@@ -288,7 +288,7 @@ void SortPath(string start_word, string end_word,
             exit(1);
         }
         // debug delete --------------------------------
-        
+        // bug ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         // check if reaches the end_word
         // if it is end_word, record this path into all_paths
         // then adjust curr_paths, make it go back two steps;
@@ -304,8 +304,7 @@ void SortPath(string start_word, string end_word,
 
           // if stack is empty, then do nothing
           // 
-          string current_top = stack_words.top();
-
+          // bug ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           if( stack_words.empty() == true ) {
             // do nothing
           }
@@ -314,6 +313,7 @@ void SortPath(string start_word, string end_word,
             int should_be_level = nodes_level.at(current_top);
             for( int i = 1 ; i <= ( should_be_level - current_path_level ) ; i++ ) {
               curr_path.erase( curr_path.begin() );
+              how_many_vec--;
             }
             // after delete nodes in curr_path, need to reset current_path_level
             current_path_level = should_be_level;
@@ -335,3 +335,20 @@ void SortPath(string start_word, string end_word,
     }
 
 }
+
+void QuickSort( vector < vector<string> >& all_paths ) {
+
+}
+
+/**
+ *  if left is less than right return -1
+ *  else return 0
+ */
+int ArraySort( const vector<string>& a, const vector<string>& b ) {
+  for( int i = 0 ; i < a.size() ; i++ ) {
+    if( a.at(i).compare( b.at(i) ) < 0 ) {
+      return -1;
+    }
+  }
+  return 0;
+} 

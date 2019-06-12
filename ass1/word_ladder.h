@@ -22,6 +22,6 @@ void display_map( const unordered_map<string, unordered_set<string> >& prev_node
 
 void SortPath(string start_word, string end_word,
                 const unordered_map<string, unordered_set<string> >& prev_nodes,
-                const unordered_map<string, int> nodes_level, 
+                const unordered_map<string, int>& nodes_level, 
                 vector < vector<string> >& all_paths);
 #endif  // ASSIGNMENTS_WL_WORD_LADDER_H_
