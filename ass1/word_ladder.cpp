@@ -10,6 +10,8 @@
 #include <iostream>
 using namespace std;
 
+void test_display( const vector<string>& one );
+
 /**
  * for start_word only
  */
@@ -107,9 +109,6 @@ void FindPath(string start_word, string end_word,const unordered_set<string> & w
     current = waiting_q.front();
     waiting_q.pop();
 
-    // debug
-    cout << "current is " << current << "\n";
-    // debug
     // before do anthing further, check if this word is in set : finished_words
     if( finished_words.find(current) != finished_words.end() ) {
       continue;
@@ -133,9 +132,6 @@ void FindPath(string start_word, string end_word,const unordered_set<string> & w
         string substitu(1, j);
         string child = current;
         child.replace(i, 1, substitu);
-        // debug
-        cout << "one possible child is " << child << "\n";
-        // debug
         /**
          * when go through loop, if child is current itself(possible)
          * then still push into queue. but when pop up, it will fail the if check
@@ -164,6 +160,8 @@ void FindPath(string start_word, string end_word,const unordered_set<string> & w
                 prev_nodes,
                 nodes_level, 
                 all_paths);
+    cout << "how many paths " << all_paths.size() << "\n";
+    QuickSort( all_paths, 0, all_paths.size() - 1 );
     for( int i = 0 ; i < all_paths.size() ; i++ ) {
       for( int j = 0 ; j < all_paths.at( i ).size() ; j++ ) {
         if( j == 0 ) {
@@ -209,38 +207,6 @@ bool CheckValid(string word,const unordered_set<string>& words_dict) {
   return false;
 }
 
-/**
- * after path is found, we need trace back and sort them
- */
-// void SortPath(string start_word, string end_word,
-//                 const unordered_map<string, unordered_set<string> >& prev_nodes,
-//                 const unordered_map<string, int> nodes_level) {
-//     vector< vector<string> > paths;
-//     int how_many_paths;
-//     int shortest_hops = nodes_level.at(end_word);
-
-//     // before go through map, do something
-//     // insert end_word
-//     vector<string> temp = {end_word};
-//     paths.insert(paths.end(), temp);
-
-//     for( int i = 0 ; i < prev_nodes.at(end_word).size() ; i++ ) {
-//         vector<string> parent_copy = paths.at(0);
-//         if( i == 0 ) {
-//             te
-//         }
-//     }
-//     /**
-//      * use stack to find all path
-//      * 
-//      */
-//     for( int i = 1 ; i < shortest_hops ; i++ ) {
-//         vector<string> parent_copy = paths.at(0);
-
-//         for ()
-//     }
-
-// }
 
 void SortPath(string start_word, string end_word,
                 const unordered_map<string, unordered_set<string> >& prev_nodes,
@@ -301,7 +267,8 @@ void SortPath(string start_word, string end_word,
           //debug need to delete ------------------
           // insert front, then the vector is sorted in order
           all_paths.insert( all_paths.begin(), curr_path );
-
+          cout << "which path >>>>>>>>>>>\n";
+          test_display(curr_path);
           // if stack is empty, then do nothing
           // 
           // bug ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -336,19 +303,63 @@ void SortPath(string start_word, string end_word,
 
 }
 
-void QuickSort( vector < vector<string> >& all_paths ) {
+void QuickSort( vector < vector<string> >& all_paths, int low, int high ) {
+  if( low < high ) {
+    int p = Partition( all_paths, low, high );
+    QuickSort( all_paths, low, p - 1 );
+    QuickSort( all_paths, p + 1, high );
+  }
+}
 
+void test_display( const vector<string>& one ) {
+  for( auto & it : one ) {
+    cout << it << ",";
+  }
+  cout << "\n";
+}
+
+int Partition( vector < vector<string> >& all_paths, int low, int high ) {
+  vector<string> pivot = all_paths.at(high);
+  int i = low - 1;
+  for( int j = low ; j <= high - 1 ; j++ ) {
+    if( Compare( all_paths.at(j), pivot ) == -1 ) {
+      i++;
+      cout << "before\n";
+      cout << "i is " << i << " j is " << j << "\n";
+      test_display(all_paths.at(i));
+      test_display(all_paths.at(j));
+      vector<string> temp = all_paths.at(i);
+      all_paths.at(i) = all_paths.at(j);
+      all_paths.at(j) = temp;
+      cout << "after\n";
+      test_display(all_paths.at(i));
+      test_display(all_paths.at(j));
+    }
+  }
+  vector<string> temp = all_paths.at(i+1);
+  all_paths.at(i+1) = all_paths.at(high);
+  all_paths.at(high) = temp;
+  return i + 1;
 }
 
 /**
  *  if left is less than right return -1
  *  else return 0
  */
-int ArraySort( const vector<string>& a, const vector<string>& b ) {
+int Compare( const vector<string>& a, const vector<string>& b ) {
+  cout << "-----------------------------------\n";
+  test_display(a);
+  test_display(b);
+  cout << "-----------------------------------\n";
   for( int i = 0 ; i < a.size() ; i++ ) {
     if( a.at(i).compare( b.at(i) ) < 0 ) {
       return -1;
     }
+    if( a.at(i).compare( b.at(i) ) > 0 ) {
+      return 0;
+    }
   }
+  cout << "been here\n";
+  cout << "-----------------------------------\n";
   return 0;
 } 

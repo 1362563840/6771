@@ -24,4 +24,8 @@ void SortPath(string start_word, string end_word,
                 const unordered_map<string, unordered_set<string> >& prev_nodes,
                 const unordered_map<string, int>& nodes_level, 
                 vector < vector<string> >& all_paths);
+
+void QuickSort( vector < vector<string> >& all_paths, int low, int high );
+int Partition( vector < vector<string> >& all_paths, int low, int high );
+int Compare( const vector<string>& a, const vector<string>& b );
 #endif  // ASSIGNMENTS_WL_WORD_LADDER_H_
