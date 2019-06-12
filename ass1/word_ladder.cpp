@@ -13,7 +13,7 @@ using namespace std;
 /**
  * for start_word only
  */
-void setLevelForStartWord(string start_word
+void SetLevelForStartWord(string start_word
     , unordered_map<string, unordered_set<string> >& prev_nodes
     , unordered_map<string, int>& nodes_level) {
   unordered_set<string> temp_set;
@@ -98,7 +98,7 @@ void FindPath(string start_word, string end_word,const unordered_set<string> & w
 
   // before go to loop, do somthing
   waiting_q.push(start_word);
-  setLevelForStartWord(start_word, prev_nodes, nodes_level);
+  SetLevelForStartWord(start_word, prev_nodes, nodes_level);
 
   // end loop conditions:
   // 1. no entry in queue  2. find the end_word and level is larger than shortest_level
@@ -106,6 +106,10 @@ void FindPath(string start_word, string end_word,const unordered_set<string> & w
     ( !( found_path == 1 && current_level > shortest_level ) ); ) {
     current = waiting_q.front();
     waiting_q.pop();
+
+    // debug
+    cout << "current is " << current << "\n";
+    // debug
     // before do anthing further, check if this word is in set : finished_words
     if( finished_words.find(current) != finished_words.end() ) {
       continue;
@@ -129,7 +133,9 @@ void FindPath(string start_word, string end_word,const unordered_set<string> & w
         string substitu(1, j);
         string child = current;
         child.replace(i, 1, substitu);
-
+        // debug
+        cout << "one possible child is " << child << "\n";
+        // debug
         /**
          * when go through loop, if child is current itself(possible)
          * then still push into queue. but when pop up, it will fail the if check
@@ -146,7 +152,30 @@ void FindPath(string start_word, string end_word,const unordered_set<string> & w
   }
 
   // debug ---------------------------------
-  display_map(prev_nodes);
+  // display_map(prev_nodes);
+
+  // debug ---------------------------------
+  vector < vector<string> > all_paths;
+  if( found_path == 0 ) {
+    cout << "No ladder found." << "\n";
+  }
+  else {
+    SortPath(start_word, end_word,
+                prev_nodes,
+                nodes_level, 
+                all_paths);
+    for( int i = 0 ; i < all_paths.size() ; i++ ) {
+      for( int j = 0 ; j < all_paths.at( i ).size() ; j++ ) {
+        if( j == 0 ) {
+          cout << all_paths.at(i).at(j);
+        }
+        else {
+          cout << "->" << all_paths.at(i).at(j);
+        }
+      }
+      cout << "\n";
+    }
+  }
 
 }
 
@@ -215,15 +244,19 @@ bool CheckValid(string word,const unordered_set<string>& words_dict) {
 
 void SortPath(string start_word, string end_word,
                 const unordered_map<string, unordered_set<string> >& prev_nodes,
-                const unordered_map<string, int> nodes_level) {
+                const unordered_map<string, int> nodes_level, 
+                vector < vector<string> >& all_paths) {
     stack <string> stack_words;
 
     int how_many_paths;
-    int current_path_level = 0;
+    int current_path_level = nodes_level.at(end_word) + 1;
+    int how_many_vec = 0;
     vector <string> curr_path;
-    vector < vector<string> > all_paths;
 
     stack_words.push(end_word);
+    
+    cout << "end_word level is >>" << nodes_level.at(end_word) << "\n";
+
     /**
      * use stack to find all path
      * 
@@ -232,19 +265,22 @@ void SortPath(string start_word, string end_word,
         string curr = stack_words.top();
         stack_words.pop();
         // next hop, add it to current path
-        if( current_path_level < nodes_level.at(curr) ) {
+        if( current_path_level > nodes_level.at(curr) ) {
             // debug need to delete ----------------------
-            if( current_path_level + 1 != nodes_level.at(curr) ) {
+            if( current_path_level - 1 != nodes_level.at(curr) ) {
                 cout << "error stack level is not correct\n";
+                exit(1);
             }
             // debug need to delete ----------------------
-            curr_path.insert( curr_path.end(), curr);
-            current_path_level++;
+            // reason to insert begin is that from end_word to start_word
+            curr_path.insert( curr_path.begin(), curr);
+            how_many_vec++;
+            current_path_level--;
         }
         // in this situation, change the last entry in curr_path
         else if( current_path_level == nodes_level.at(curr) ) {
             //replace value
-            curr_path.at( current_path_level - 1 ) = curr;
+            curr_path.at( how_many_vec - 1 ) = curr;
         }
         // debug delete --------------------------------
         else {
@@ -254,14 +290,41 @@ void SortPath(string start_word, string end_word,
         // debug delete --------------------------------
         
         // check if reaches the end_word
-        if() {
+        // if it is end_word, record this path into all_paths
+        // then adjust curr_paths, make it go back two steps;
+        if( curr == start_word ) {
+          //debug need to delete ------------------
+          if( current_path_level != nodes_level.at(start_word) ) {
+            cout << "error level\n";
+            exit(1);
+          }
+          //debug need to delete ------------------
+          // insert front, then the vector is sorted in order
+          all_paths.insert( all_paths.begin(), curr_path );
+
+          // if stack is empty, then do nothing
+          // 
+          string current_top = stack_words.top();
+
+          if( stack_words.empty() == true ) {
+            // do nothing
+          }
+          else {
+            string current_top = stack_words.top();
+            int should_be_level = nodes_level.at(current_top);
+            for( int i = 1 ; i <= ( should_be_level - current_path_level ) ; i++ ) {
+              curr_path.erase( curr_path.begin() );
+            }
+            // after delete nodes in curr_path, need to reset current_path_level
+            current_path_level = should_be_level;
+          }
 
         }
 
         const unordered_set<string>& temp = prev_nodes.at(curr);
         set<string> order;
         // convert unorder_set to set
-        copy( temp.begin(), temp.end(), order.begin() );
+        copy( temp.begin(), temp.end(), inserter( order, order.begin() ) );
         
         // add children to stack
         for( const auto& word : order ) {
