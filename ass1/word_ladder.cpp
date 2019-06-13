@@ -1,76 +1,81 @@
 #include "word_ladder.h"
-#include <map>
-#include <unordered_map>
-#include <queue>
-#include <stack>
-#include <vector>
-#include <set>
-#include <unordered_set>
-#include <limits>
+
 #include <iostream>
+#include <limits>
+#include <map>
+#include <queue>
+#include <set>
+#include <stack>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
 using namespace std;
 
-void test_display( const vector<string>& one );
+class FindPath {
+  public:
+    int _hops;
+    int _how_many_paths;
+
+    string _end_word;
+    string _start_word;
+    
+    FindPath(string start_word, string end_word ) {
+      this -> _start_word = start_word;
+      this -> _end_word = end_word;
+    }
+};
 
 /**
- * for start_word only
+ *
  */
-void SetLevelForStartWord(string start_word
-    , unordered_map<string, unordered_set<string> >& prev_nodes
-    , unordered_map<string, int>& nodes_level) {
-  unordered_set<string> temp_set;
-  prev_nodes.insert( {start_word, temp_set} );
-  nodes_level.insert( {start_word, 1} );
+bool CheckValid(string word,const unordered_set<string>& words_dict) {
+  if( words_dict.find( word ) != words_dict.end() ) {
+    return true;
+  }
+  return false;
 }
 
 /**
- * if it has no previous node, then it must be start_word, set it to 1 otherwise
- * pre_level + 1
+ *  if left is less than right return -1
+ *  else return 0
  */
-void SetLevel(string word, string prev
-    , unordered_map<string, unordered_set<string> >& prev_nodes
-    , unordered_map<string, int>& nodes_level) {
-  // debug need to delete----------------------------
-  if( prev.compare("") == 0 ) {
-    cout << "error 1 setLevel\n";
-    exit(1);
-  }
-  // debug need to delete----------------------------
-  // it is new node
-  if( prev_nodes.find(word) == prev_nodes.end() ) {
-    unordered_set<string> temp_set = {prev};
-    prev_nodes.insert( {word, temp_set} );
-    nodes_level.insert( {word, nodes_level.at(prev) + 1 } );
-  }
-    // old node
-  else if( prev_nodes.find(word) != prev_nodes.end() ) {
-    // if in prev_nodes, "word" already exists, check existing level
-    // if existing is larger , then error
-    // if samller, then ignore,
-    // if same, then record
-
-    // larger
-    // debug need to delete----------------------------
-    if( nodes_level.at(word) > nodes_level.at(prev) + 1 ) {
-      cout << "error impossible case debug\n";
-      exit(1);
+int Compare( const vector<string>& a, const vector<string>& b ) {
+  cout << "-----------------------------------\n";
+  test_display(a);
+  test_display(b);
+  cout << "-----------------------------------\n";
+  for( int i = 0 ; i < a.size() ; i++ ) {
+    if( a.at(i).compare( b.at(i) ) < 0 ) {
+      return -1;
     }
-    // debug need to delete----------------------------
-    // same
-    if( nodes_level.at(word) == nodes_level.at(prev) + 1  ) {
-      // find existing set
-      unordered_set<string>& temp_set = prev_nodes.at(word);
-      // insert new previous node with same length path
-      temp_set.insert(prev);
+    if( a.at(i).compare( b.at(i) ) > 0 ) {
+      return 0;
     }
+  }
+  cout << "been here\n";
+  cout << "-----------------------------------\n";
+  return 0;
+} 
 
+void display_map( const unordered_map<string, unordered_set<string> >& prev_nodes) {
+  cout << "start\n";
+  for( auto const& pair : prev_nodes ) {
+    cout << pair.first << "->\n";
+    int column = 10;
+    int current_col = 0;
+    for( auto const& str : pair.second ) {
+      // display in matrix
+      if( current_col == column ) {
+        cout << "\n" << str;
+      }
+      else {
+        cout << str << ", ";
+      }
+      current_col++;
+    }
+    cout << "\n";
   }
-    // debug need to delete----------------------------
-  else {
-    cout << "error 2 setLevel\n";
-    exit(1);
-  }
-  // debug need to delete----------------------------
 }
 
 /**
@@ -177,36 +182,98 @@ void FindPath(string start_word, string end_word,const unordered_set<string> & w
 
 }
 
-void display_map( const unordered_map<string, unordered_set<string> >& prev_nodes) {
-  cout << "start\n";
-  for( auto const& pair : prev_nodes ) {
-    cout << pair.first << "->\n";
-    int column = 10;
-    int current_col = 0;
-    for( auto const& str : pair.second ) {
-      // display in matrix
-      if( current_col == column ) {
-        cout << "\n" << str;
-      }
-      else {
-        cout << str << ", ";
-      }
-      current_col++;
+int Partition( vector < vector<string> >& all_paths, int low, int high ) {
+  vector<string> pivot = all_paths.at(high);
+  int i = low - 1;
+  for( int j = low ; j <= high - 1 ; j++ ) {
+    if( Compare( all_paths.at(j), pivot ) == -1 ) {
+      i++;
+      cout << "before\n";
+      cout << "i is " << i << " j is " << j << "\n";
+      test_display(all_paths.at(i));
+      test_display(all_paths.at(j));
+      vector<string> temp = all_paths.at(i);
+      all_paths.at(i) = all_paths.at(j);
+      all_paths.at(j) = temp;
+      cout << "after\n";
+      test_display(all_paths.at(i));
+      test_display(all_paths.at(j));
     }
-    cout << "\n";
+  }
+  vector<string> temp = all_paths.at(i+1);
+  all_paths.at(i+1) = all_paths.at(high);
+  all_paths.at(high) = temp;
+  return i + 1;
+}
+
+void QuickSort( vector < vector<string> >& all_paths, int low, int high ) {
+  if( low < high ) {
+    int p = Partition( all_paths, low, high );
+    QuickSort( all_paths, low, p - 1 );
+    QuickSort( all_paths, p + 1, high );
   }
 }
 
 /**
- *
+ * if it has no previous node, then it must be start_word, set it to 1 otherwise
+ * pre_level + 1
  */
-bool CheckValid(string word,const unordered_set<string>& words_dict) {
-  if( words_dict.find( word ) != words_dict.end() ) {
-    return true;
+void SetLevel(string word, string prev
+    , unordered_map<string, unordered_set<string> >& prev_nodes
+    , unordered_map<string, int>& nodes_level) {
+  // debug need to delete----------------------------
+  if( prev.compare("") == 0 ) {
+    cout << "error 1 setLevel\n";
+    exit(1);
   }
-  return false;
+  // debug need to delete----------------------------
+  // it is new node
+  if( prev_nodes.find(word) == prev_nodes.end() ) {
+    unordered_set<string> temp_set = {prev};
+    prev_nodes.insert( {word, temp_set} );
+    nodes_level.insert( {word, nodes_level.at(prev) + 1 } );
+  }
+    // old node
+  else if( prev_nodes.find(word) != prev_nodes.end() ) {
+    // if in prev_nodes, "word" already exists, check existing level
+    // if existing is larger , then error
+    // if samller, then ignore,
+    // if same, then record
+
+    // larger
+    // debug need to delete----------------------------
+    if( nodes_level.at(word) > nodes_level.at(prev) + 1 ) {
+      cout << "error impossible case debug\n";
+      exit(1);
+    }
+    // debug need to delete----------------------------
+    // same
+    if( nodes_level.at(word) == nodes_level.at(prev) + 1  ) {
+      // find existing set
+      unordered_set<string>& temp_set = prev_nodes.at(word);
+      // insert new previous node with same length path
+      temp_set.insert(prev);
+    }
+
+  }
+    // debug need to delete----------------------------
+  else {
+    cout << "error 2 setLevel\n";
+    exit(1);
+  }
+  // debug need to delete----------------------------
 }
 
+/**
+ * for start_word only
+ */
+void SetLevelForStartWord(string start_word
+    , unordered_map<string, unordered_set<string> >& prev_nodes
+    , unordered_map<string, int>& nodes_level) {
+  unordered_set<string> temp_set;
+  prev_nodes.insert( {start_word, temp_set} );
+  nodes_level.insert( {start_word, 1} );
+}
 
 void SortPath(string start_word, string end_word,
                 const unordered_map<string, unordered_set<string> >& prev_nodes,
@@ -303,14 +370,6 @@ void SortPath(string start_word, string end_word,
 
 }
 
-void QuickSort( vector < vector<string> >& all_paths, int low, int high ) {
-  if( low < high ) {
-    int p = Partition( all_paths, low, high );
-    QuickSort( all_paths, low, p - 1 );
-    QuickSort( all_paths, p + 1, high );
-  }
-}
-
 void test_display( const vector<string>& one ) {
   for( auto & it : one ) {
     cout << it << ",";
@@ -318,48 +377,3 @@ void test_display( const vector<string>& one ) {
   cout << "\n";
 }
 
-int Partition( vector < vector<string> >& all_paths, int low, int high ) {
-  vector<string> pivot = all_paths.at(high);
-  int i = low - 1;
-  for( int j = low ; j <= high - 1 ; j++ ) {
-    if( Compare( all_paths.at(j), pivot ) == -1 ) {
-      i++;
-      cout << "before\n";
-      cout << "i is " << i << " j is " << j << "\n";
-      test_display(all_paths.at(i));
-      test_display(all_paths.at(j));
-      vector<string> temp = all_paths.at(i);
-      all_paths.at(i) = all_paths.at(j);
-      all_paths.at(j) = temp;
-      cout << "after\n";
-      test_display(all_paths.at(i));
-      test_display(all_paths.at(j));
-    }
-  }
-  vector<string> temp = all_paths.at(i+1);
-  all_paths.at(i+1) = all_paths.at(high);
-  all_paths.at(high) = temp;
-  return i + 1;
-}
-
-/**
- *  if left is less than right return -1
- *  else return 0
- */
-int Compare( const vector<string>& a, const vector<string>& b ) {
-  cout << "-----------------------------------\n";
-  test_display(a);
-  test_display(b);
-  cout << "-----------------------------------\n";
-  for( int i = 0 ; i < a.size() ; i++ ) {
-    if( a.at(i).compare( b.at(i) ) < 0 ) {
-      return -1;
-    }
-    if( a.at(i).compare( b.at(i) ) > 0 ) {
-      return 0;
-    }
-  }
-  cout << "been here\n";
-  cout << "-----------------------------------\n";
-  return 0;
-} 

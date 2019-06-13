@@ -1,12 +1,16 @@
 #include <iostream>
-#include <string>
 #include <map>
+#include <string>
+#include <time.h>
+#include <unordered_set>
+
 #include "lexicon.h"
 #include "word_ladder.h"
-#include <unordered_set>
+
 using namespace std;
 
 int main(int argc, char *argv[]) {
+    clock_t start = clock();
     auto lexicon = GetLexicon("words.txt");
 
     // open file, then store all words in map
@@ -41,4 +45,7 @@ int main(int argc, char *argv[]) {
 
     FindPath(start_word, end_word, words_dict);
 
-}
+    clock_t stop = clock();
+    double elapsed = (double) (stop - start) / CLOCKS_PER_SEC;
+    printf("\nTime elapsed: %.5f\n", elapsed);
+} 
