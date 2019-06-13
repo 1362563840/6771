@@ -232,13 +232,12 @@ void SetLevel(string word, string prev
       // insert new previous node with same length path
       temp_set.insert(prev);
     }
-  }
-    // debug need to delete----------------------------
-  else {
+  }else {
+    // debug need to delete---------------------------- one line above
     cout << "error 2 setLevel\n";
     exit(1);
+    // debug need to delete----------------------------
   }
-  // debug need to delete----------------------------
 }
 
 /**
