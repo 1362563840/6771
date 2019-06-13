@@ -78,6 +78,7 @@ TEST_CASE("Check if function CheckValid() can accurately tell whether words in d
    * because initially size is 0, so it will causes bug
    */
   GIVEN("2d string sort") {
+    unsigned int seed = 1;
     WHEN("in reverse order") {
       vector<string> v1 = {"zoo","ok","less","zee"};
       vector<string> v2 = {"test","more","less","zee"};
@@ -116,12 +117,12 @@ TEST_CASE("Check if function CheckValid() can accurately tell whether words in d
 
       v.insert(v.begin(),v1);
       v.insert(v.begin(),v2);
-      v.insert(v.begin()+( rand()%(v.size()) ),v3);
-      v.insert(v.begin()+( rand()%(v.size()) ),v4);
-      v.insert(v.begin()+( rand()%(v.size()) ),v5);
-      v.insert(v.begin()+( rand()%(v.size()) ),v6);
-      v.insert(v.begin()+( rand()%(v.size()) ),v7);
-      v.insert(v.begin()+( rand()%(v.size()) ),v8);
+      v.insert(v.begin()+( rand_r()%(v.size()) ),v3);
+      v.insert(v.begin()+( rand_r()%(v.size()) ),v4);
+      v.insert(v.begin()+( rand_r()%(v.size()) ),v5);
+      v.insert(v.begin()+( rand_r()%(v.size()) ),v6);
+      v.insert(v.begin()+( rand_r()%(v.size()) ),v7);
+      v.insert(v.begin()+( rand_r()%(v.size()) ),v8);
       QuickSort(v, 0, v.size()-1 );
 
       REQUIRE(v.at(0).at(0)=="bob");
@@ -150,12 +151,12 @@ TEST_CASE("Check if function CheckValid() can accurately tell whether words in d
       vector < vector<string> > v;
       v.insert(v.begin(),v1);
       v.insert(v.begin(),v2);
-      v.insert(v.begin()+( rand()%(v.size()) ),v3);
-      v.insert(v.begin()+( rand()%(v.size()) ),v4);
-      v.insert(v.begin()+( rand()%(v.size()) ),v5);
-      v.insert(v.begin()+( rand()%(v.size()) ),v6);
-      v.insert(v.begin()+( rand()%(v.size()) ),v7);
-      v.insert(v.begin()+( rand()%(v.size()) ),v8);
+      v.insert(v.begin()+( rand_r()%(v.size()) ),v3);
+      v.insert(v.begin()+( rand_r()%(v.size()) ),v4);
+      v.insert(v.begin()+( rand_r()%(v.size()) ),v5);
+      v.insert(v.begin()+( rand_r()%(v.size()) ),v6);
+      v.insert(v.begin()+( rand_r()%(v.size()) ),v7);
+      v.insert(v.begin()+( rand_r()%(v.size()) ),v8);
 
       QuickSort(v,0,6);
       REQUIRE(v.at(0).at(0)=="bob");
