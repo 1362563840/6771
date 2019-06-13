@@ -7,7 +7,11 @@
 #include "lexicon.h"
 #include "word_ladder.h"
 
-using namespace std;
+using std::cout;
+using std::getline;
+using std::string;
+using std::unordered_set;
+
 
 int main() {
     auto lexicon = GetLexicon("words.txt");
