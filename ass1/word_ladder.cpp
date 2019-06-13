@@ -12,22 +12,8 @@
 
 using namespace std;
 
-class FindPath {
-  public:
-    int _hops;
-    int _how_many_paths;
-
-    string _end_word;
-    string _start_word;
-    
-    FindPath(string start_word, string end_word ) {
-      this -> _start_word = start_word;
-      this -> _end_word = end_word;
-    }
-};
-
 /**
- *
+ *  check if this word is in dictionary
  */
 bool CheckValid(string word,const unordered_set<string>& words_dict) {
   if( words_dict.find( word ) != words_dict.end() ) {
@@ -37,10 +23,12 @@ bool CheckValid(string word,const unordered_set<string>& words_dict) {
 }
 
 /**
+ *  compare vector<string> with vector<string>
+ *  should have same length,
  *  if left is less than right return -1
  *  else return 0
  */
-int Compare( const vector<string>& a, const vector<string>& b ) {
+int Compare(const vector<string>& a, const vector<string>& b) {
   for( int i = 0 ; i < a.size() ; i++ ) {
     if( a.at(i).compare( b.at(i) ) < 0 ) {
       return -1;
@@ -52,21 +40,21 @@ int Compare( const vector<string>& a, const vector<string>& b ) {
   return 0;
 } 
 
-void DisplayMap( const unordered_map<string, unordered_set<string> >& prev_nodes) {
-  cout << "start\n";
-  for( auto const& pair : prev_nodes ) {
-    cout << pair.first << "->\n";
-    int column = 10;
-    int current_col = 0;
-    for( auto const& str : pair.second ) {
-      // display in matrix
-      if( current_col == column ) {
-        cout << "\n" << str;
+/**
+ * display all paths
+ */
+void DisplayMap(const vector < vector<string> >& all_paths) {
+  cout << "Found ladder: ";
+  for( auto const& path : all_paths ) {
+    int first = 0;
+    for( auto const& str : path ) {
+      if( first == 0 ) {
+          cout << str;
+          first++;
       }
       else {
-        cout << str << ", ";
+        cout << " " << str;
       }
-      current_col++;
     }
     cout << "\n";
   }
@@ -75,9 +63,9 @@ void DisplayMap( const unordered_map<string, unordered_set<string> >& prev_nodes
 /**
  * when pop up a word, find all possible transforming words. After that,
  * mark this word as finished.
- *
+ * use queue to do
  * one optimization
- *
+ * 
  */
 void FindPath(string start_word, string end_word,const unordered_set<string> & words_dict) {
   // queue waiting to be popped up
@@ -160,19 +148,7 @@ void FindPath(string start_word, string end_word,const unordered_set<string> & w
                 nodes_level, 
                 all_paths);
     QuickSort( all_paths, 0, all_paths.size() - 1 );
-
-    for( int i = 0 ; i < all_paths.size() ; i++ ) {
-      for( int j = 0 ; j < all_paths.at( i ).size() ; j++ ) {
-        if( j == 0 ) {
-          cout << all_paths.at(i).at(j);
-        }
-        else {
-          cout << "->" << all_paths.at(i).at(j);
-        }
-      }
-      cout << "\n";
-    }
-
+    DisplayMap( all_paths );
   }
 
 }
@@ -180,7 +156,7 @@ void FindPath(string start_word, string end_word,const unordered_set<string> & w
 /**
  * combined with QuickSort
  */
-int Partition( vector < vector<string> >& all_paths, int low, int high ) {
+int Partition(vector < vector<string> >& all_paths, int low, int high) {
   vector<string> pivot = all_paths.at(high);
   int i = low - 1;
   for( int j = low ; j <= high - 1 ; j++ ) {
@@ -197,7 +173,7 @@ int Partition( vector < vector<string> >& all_paths, int low, int high ) {
   return i + 1;
 }
 
-void QuickSort( vector < vector<string> >& all_paths, int low, int high ) {
+void QuickSort(vector < vector<string> >& all_paths, int low, int high) {
   if( low < high ) {
     int p = Partition( all_paths, low, high );
     QuickSort( all_paths, low, p - 1 );
@@ -357,7 +333,7 @@ void SortPath(string start_word, string end_word,
 
 }
 
-void TestDisplay( const vector<string>& one ) {
+void TestDisplay(const vector<string>& one) {
   for( auto & it : one ) {
     cout << it << ",";
   }

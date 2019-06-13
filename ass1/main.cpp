@@ -10,7 +10,6 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    clock_t start = clock();
     auto lexicon = GetLexicon("words.txt");
 
     // open file, then store all words in map
@@ -18,16 +17,6 @@ int main(int argc, char *argv[]) {
     unordered_set<string> words_dict;
     for(const auto& word : lexicon) {
       words_dict.insert( word );
-    }
-    // debug, need to delete---------------
-    // for(auto& elem : words_dict)
-    // {
-    //   std::cout << elem.first << " " << elem.second << "\n";
-    // }
-
-    // should only contains two arguments incluing ./
-    if(argc != 2) {
-  //    Error("wrong command\n");
     }
 
     string start_word;
@@ -44,8 +33,4 @@ int main(int argc, char *argv[]) {
     }
 
     FindPath(start_word, end_word, words_dict);
-
-    clock_t stop = clock();
-    double elapsed = (double) (stop - start) / CLOCKS_PER_SEC;
-    printf("\nTime elapsed: %.5f\n", elapsed);
 } 
