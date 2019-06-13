@@ -13,7 +13,7 @@ bool CheckValid(string word,const unordered_set<string>& words_dict);
 
 int Compare( const vector<string>& a, const vector<string>& b );
 
-void display_map( const unordered_map<string, unordered_set<string> >& prev_nodes);
+void DisplayMap( const unordered_map<string, unordered_set<string> >& prev_nodes);
 
 void FindPath(string start_word, string end_word,const unordered_set<string> & words_dict);
 
@@ -34,6 +34,6 @@ void SortPath(string start_word, string end_word,
                 const unordered_map<string, int>& nodes_level, 
                 vector < vector<string> >& all_paths);
 
-void test_display( const vector<string>& one );
+void TestDisplay( const vector<string>& one );
 
 #endif  // ASSIGNMENTS_WL_WORD_LADDER_H_
