@@ -10,7 +10,16 @@
 #include <unordered_set>
 #include <vector>
 
-using namespace std;
+using std::cout;
+using std::exit;
+using std::getline;
+using std::queue;
+using std::set;
+using std::stack;
+using std::string;
+using std::unordered_map;
+using std::unordered_set;
+using std::vector;
 
 /**
  *  check if this word is in dictionary

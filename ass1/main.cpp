@@ -8,6 +8,7 @@
 #include "word_ladder.h"
 
 using std::cout;
+using std::exit;
 using std::getline;
 using std::string;
 using std::unordered_set;
@@ -33,7 +34,7 @@ int main() {
     cout << "Enter destination word: ";
     getline (std::cin,end_word);
     if( end_word.length() == 0 ) {
-      exit(1);
+      std::exit(1);
     }
 
     FindPath(start_word, end_word, words_dict);
