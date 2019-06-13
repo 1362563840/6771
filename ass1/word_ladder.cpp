@@ -1,5 +1,6 @@
 #include "word_ladder.h"
 
+#include <algorithm>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -210,8 +211,7 @@ void SetLevel(string word, string prev
     unordered_set<string> temp_set = {prev};
     prev_nodes.insert( {word, temp_set} );
     nodes_level.insert( {word, nodes_level.at(prev) + 1 } );
-  }
-    // old node
+  }// old node
   else if( prev_nodes.find(word) != prev_nodes.end() ) {
     // if in prev_nodes, "word" already exists, check existing level
     // if existing is larger , then error
