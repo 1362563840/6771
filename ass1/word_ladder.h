@@ -7,7 +7,6 @@
 #include <vector>
 
 using namespace std;
-// third variable
 
 bool CheckValid(string word,const unordered_set<string>& words_dict);
 

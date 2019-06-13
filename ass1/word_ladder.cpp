@@ -173,6 +173,9 @@ int Partition(vector < vector<string> >& all_paths, int low, int high) {
   return i + 1;
 }
 
+/**
+ * quicksort for vector<vector<string>>
+ */
 void QuickSort(vector < vector<string> >& all_paths, int low, int high) {
   if( low < high ) {
     int p = Partition( all_paths, low, high );
@@ -242,6 +245,9 @@ void SetLevelForStartWord(string start_word
   nodes_level.insert( {start_word, 1} );
 }
 
+/**
+ * trace back from end to start
+ */
 void SortPath(string start_word, string end_word,
                 const unordered_map<string, unordered_set<string> >& prev_nodes,
                 const unordered_map<string, int>& nodes_level, 

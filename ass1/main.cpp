@@ -9,7 +9,7 @@
 
 using namespace std;
 
-int main(int argc, char *argv[]) {
+int main() {
     auto lexicon = GetLexicon("words.txt");
 
     // open file, then store all words in map
