@@ -19,7 +19,6 @@ TEST_CASE("Check if function CheckValid() can accurately tell whether words in d
    * i.e. whether a word is in dict
    */
   GIVEN("when dict is small") {
-
     unordered_set<string> words_dict = {"a","b","c","aa","bb","cc","x"};
     REQUIRE(words_dict.size()==7);
 
@@ -46,7 +45,6 @@ TEST_CASE("Check if function CheckValid() can accurately tell whether words in d
    * othewise, continue
    */
   GIVEN("compare two vector<strubg> not just string") {
-    
     WHEN("first same, then compare second") {
       vector<string> v1 = {"test","more","less"};
       vector<string> v2 = {"test","less","more"};
@@ -117,12 +115,12 @@ TEST_CASE("Check if function CheckValid() can accurately tell whether words in d
 
       v.insert(v.begin(),v1);
       v.insert(v.begin(),v2);
-      v.insert(v.begin()+( rand_r()%(v.size()) ),v3);
-      v.insert(v.begin()+( rand_r()%(v.size()) ),v4);
-      v.insert(v.begin()+( rand_r()%(v.size()) ),v5);
-      v.insert(v.begin()+( rand_r()%(v.size()) ),v6);
-      v.insert(v.begin()+( rand_r()%(v.size()) ),v7);
-      v.insert(v.begin()+( rand_r()%(v.size()) ),v8);
+      v.insert(v.begin()+( rand_r(&seed)%(v.size()) ),v3);
+      v.insert(v.begin()+( rand_r(&seed)%(v.size()) ),v4);
+      v.insert(v.begin()+( rand_r(&seed)%(v.size()) ),v5);
+      v.insert(v.begin()+( rand_r(&seed)%(v.size()) ),v6);
+      v.insert(v.begin()+( rand_r(&seed)%(v.size()) ),v7);
+      v.insert(v.begin()+( rand_r(&seed)%(v.size()) ),v8);
       QuickSort(v, 0, v.size()-1 );
 
       REQUIRE(v.at(0).at(0)=="bob");
@@ -151,12 +149,12 @@ TEST_CASE("Check if function CheckValid() can accurately tell whether words in d
       vector < vector<string> > v;
       v.insert(v.begin(),v1);
       v.insert(v.begin(),v2);
-      v.insert(v.begin()+( rand_r()%(v.size()) ),v3);
-      v.insert(v.begin()+( rand_r()%(v.size()) ),v4);
-      v.insert(v.begin()+( rand_r()%(v.size()) ),v5);
-      v.insert(v.begin()+( rand_r()%(v.size()) ),v6);
-      v.insert(v.begin()+( rand_r()%(v.size()) ),v7);
-      v.insert(v.begin()+( rand_r()%(v.size()) ),v8);
+      v.insert(v.begin()+( rand_r(&seed)%(v.size()) ),v3);
+      v.insert(v.begin()+( rand_r(&seed)%(v.size()) ),v4);
+      v.insert(v.begin()+( rand_r(&seed)%(v.size()) ),v5);
+      v.insert(v.begin()+( rand_r(&seed)%(v.size()) ),v6);
+      v.insert(v.begin()+( rand_r(&seed)%(v.size()) ),v7);
+      v.insert(v.begin()+( rand_r(&seed)%(v.size()) ),v8);
 
       QuickSort(v,0,6);
       REQUIRE(v.at(0).at(0)=="bob");
