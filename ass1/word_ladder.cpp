@@ -211,8 +211,8 @@ void SetLevel(string word, string prev
     unordered_set<string> temp_set = {prev};
     prev_nodes.insert( {word, temp_set} );
     nodes_level.insert( {word, nodes_level.at(prev) + 1 } );
-  }// old node
-  else if( prev_nodes.find(word) != prev_nodes.end() ) {
+  }else if( prev_nodes.find(word) != prev_nodes.end() ) {
+    // old node
     // if in prev_nodes, "word" already exists, check existing level
     // if existing is larger , then error
     // if samller, then ignore,
@@ -232,7 +232,6 @@ void SetLevel(string word, string prev
       // insert new previous node with same length path
       temp_set.insert(prev);
     }
-
   }
     // debug need to delete----------------------------
   else {
@@ -287,19 +286,16 @@ void SortPath(string start_word, string end_word,
       curr_path.insert( curr_path.begin(), curr);
       how_many_vec++;
       current_path_level--;
-    }
+    }else if( current_path_level == nodes_level.at(curr) ) {
       // in this situation, change the last entry in curr_path
-    else if( current_path_level == nodes_level.at(curr) ) {
       //replace value
       curr_path.at( 0 ) = curr;
-    }
-      // debug delete --------------------------------
-    else {
+    }else {
+      // debug delete -------------------------------- delete else {} one line above
       cout << "error check \n";
       exit(1);
+      // debug delete --------------------------------
     }
-    // debug delete --------------------------------
-    // bug ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // check if reaches the end_word
     // if it is end_word, record this path into all_paths
     // then adjust curr_paths, make it go back two steps;
@@ -313,8 +309,6 @@ void SortPath(string start_word, string end_word,
       // insert front, then the vector is sorted in order
       all_paths.insert( all_paths.begin(), curr_path );
       // if stack is empty, then do nothing
-      //
-      // bug ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       if( stack_words.empty() == true ) {
         // do nothing
       }
