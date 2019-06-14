@@ -1,6 +1,10 @@
 #ifndef ASSIGNMENTS_WL_WORD_LADDER_H_
 #define ASSIGNMENTS_WL_WORD_LADDER_H_
 
+#include <iostream>
+#include <queue>
+#include <set>
+#include <stack>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -38,9 +42,9 @@ void SetLevelForStartWord(string start_word
     , unordered_map<string, int>& nodes_level);
 
 void SortPath(string start_word, string end_word,
-                const unordered_map<string, unordered_set<string> >& prev_nodes,
-                const unordered_map<string, int>& nodes_level, 
-                vector < vector<string> >& all_paths);
+              const unordered_map<string, unordered_set<string> >& prev_nodes,
+              const unordered_map<string, int>& nodes_level,
+              vector < vector<string> >& all_paths);
 
 void TestDisplay(const vector<string>& one);
 
