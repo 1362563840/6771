@@ -13,7 +13,7 @@
 #include "assignments/wl/lexicon.h"
 #include "assignments/wl/word_ladder.h"
 
-TEST_CASE("Check if function CheckValid() can accurately tell whether words in dict or not") {
+SCENARIO("Check if function CheckValid() can accurately tell whether words in dict or not") {
   /**
    * test for function CheckValid()
    * i.e. whether a word is in dict
@@ -38,7 +38,9 @@ TEST_CASE("Check if function CheckValid() can accurately tell whether words in d
     }
 
   }
+}
 
+SCENARIO("for function Compare()"){
   /**
    * it will compare each string in separate vector, v1, v2
    * if v1.at(i) > v2(i) or <, then should return result
@@ -65,9 +67,10 @@ TEST_CASE("Check if function CheckValid() can accurately tell whether words in d
       int result = Compare(v1,v2);
       REQUIRE(result==0);
     }
-    
   }
+}
 
+SCENARIO("for function QuickSort()"){
   /**
    * test whether 2d string sort works
    * function QuickSort() and Partition()
@@ -170,5 +173,6 @@ TEST_CASE("Check if function CheckValid() can accurately tell whether words in d
       REQUIRE(v.at(7).at(1)=="ok");
     }
   }
-
 }
+
+
