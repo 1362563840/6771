@@ -7,6 +7,7 @@
    and why you think your tests are that thorough.
 
 */
+#include <string>
 #include <unordered_set>
 
 #include "catch.h"
