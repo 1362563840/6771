@@ -41,13 +41,23 @@ class EuclideanVector {
   friend void DefinedSwap(EuclideanVector & first, EuclideanVector & second); // nothrow
 
   EuclideanVector & operator =(const EuclideanVector & rhs);
-  EuclideanVector & operator = (EuclideanVector& rhs);
-  EuclideanVector & operator =(EuclideanVector rhs);
+  // EuclideanVector & operator =(EuclideanVector rhs);
 
-  // EuclideanVector operator =( EuclideanVector&& ev );
+  EuclideanVector operator =(EuclideanVector&& ev);
 
-  // bool operator ==( EuclideanVector& ev );
+  double& operator [](const int index);
 
+  EuclideanVector& operator +=(EuclideanVector& rhs);
+
+  EuclideanVector& operator -=(EuclideanVector& rhs);
+
+  EuclideanVector& operator *=(const int scalar);
+
+  EuclideanVector& operator /=(const int scalar);
+
+  explicit operator std::vector<double>();
+
+  explicit operator std::list<double>();
   void display() {
     cout << "size is " << this -> size_ << "\n";
     cout << "dimension is\n";
