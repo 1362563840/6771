@@ -1,6 +1,7 @@
 // #include "assignments/ev/euclidean_vector.h"
 #include "euclidean_vector.h"
 
+#include <cassert>
 #include <algorithm>  
 #include <cmath>
 #include <iostream>
@@ -219,6 +220,7 @@ bool operator ==(const EuclideanVector& lhs, const EuclideanVector& rhs)
 
 bool operator !=(const EuclideanVector& lhs, const EuclideanVector& rhs)
 {
+    return !( operator==( lhs, rhs ) );
     if( lhs.size_ != rhs.size_ ) {
         return true;
     }

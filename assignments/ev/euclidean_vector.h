@@ -37,7 +37,7 @@ class EuclideanVector {
 
   explicit  EuclideanVector(const EuclideanVector & another);
 
-  explicit  EuclideanVector(EuclideanVector && another);
+  explicit  EuclideanVector(EuclideanVector && another) noexcept;
 
   ~EuclideanVector();
 
@@ -47,7 +47,7 @@ class EuclideanVector {
   EuclideanVector & operator =(const EuclideanVector & rhs);
   // EuclideanVector & operator =(EuclideanVector rhs);
 
-  EuclideanVector operator =(EuclideanVector&& ev);
+  EuclideanVector operator =(EuclideanVector&& ev) noexcept;
 
   double& operator [](const int index);
 
