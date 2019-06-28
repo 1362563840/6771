@@ -1,7 +1,6 @@
 #ifndef ASS2_EUCLIDEAN_VECTOR_H
 #define ASS2_EUCLIDEAN_VECTOR_H
 
-// TODO(you): Include header guards
 #include <exception>
 #include <iostream>
 #include <list>
