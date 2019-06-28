@@ -2,19 +2,19 @@
 #define ASS2_EUCLIDEAN_VECTOR_H
 
 // TODO(you): Include header guards
-#include <iostream>
 #include <exception>
+#include <iostream>
 #include <list>
 #include <memory>
 #include <string>
 #include <vector>
 
-using std::unique_ptr;
 using std::cout;
 using std::list;
 using std::make_unique;
 using std::move;
 using std::ostream;
+using std::unique_ptr;
 using std::vector;
 
 class EuclideanVectorError : public std::exception {
@@ -42,7 +42,8 @@ class EuclideanVector {
 
   ~EuclideanVector();
 
-  friend void DefinedSwap(EuclideanVector & first, EuclideanVector & second); // nothrow
+  // nothrow
+  friend void DefinedSwap(EuclideanVector & first, EuclideanVector & second); 
 
   EuclideanVector & operator =(const EuclideanVector & rhs);
   // EuclideanVector & operator =(EuclideanVector rhs);
@@ -98,13 +99,11 @@ class EuclideanVector {
       cout << this -> magnitudes_.get()[ i ] << "\n";
     }
   }
-  // TODO(you): add more
+
  private:
   int size_;
   std::unique_ptr<double[]> magnitudes_;
 
-
-  // TODO(you): add more
 };
 
 #endif //ASS2_EUCLIDEAN_VECTOR_H
