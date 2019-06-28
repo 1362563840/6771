@@ -4,13 +4,17 @@
 // TODO(you): Include header guards
 #include <iostream>
 #include <exception>
+#include <list>
 #include <memory>
 #include <string>
 #include <vector>
 
+using std::unique_ptr;
 using std::cout;
+using std::list;
 using std::make_unique;
 using std::move;
+using std::ostream;
 using std::vector;
 
 class EuclideanVectorError : public std::exception {
@@ -58,6 +62,35 @@ class EuclideanVector {
   explicit operator std::vector<double>();
 
   explicit operator std::list<double>();
+
+  double at(int index);
+
+  int GetNumDimensions();
+
+  double GetEuclideanNorm();
+
+  EuclideanVector CreateUnitVector();
+
+  friend bool operator ==(const EuclideanVector& lhs, const EuclideanVector& rhs);
+
+  friend bool operator !=(const EuclideanVector& lhs, const EuclideanVector& rhs);
+
+  friend EuclideanVector operator +(const EuclideanVector& lhs, const EuclideanVector& rhs);
+
+  friend EuclideanVector operator -(const EuclideanVector& lhs, const EuclideanVector& rhs);
+
+  friend double operator *(const EuclideanVector& lhs, const EuclideanVector& rhs);
+
+  // EuclideanVector operator *(EuclideanVector& rhs);
+
+  friend EuclideanVector operator *(const EuclideanVector& lhs, const int scalar);
+
+  friend EuclideanVector operator *(const int scalar, const EuclideanVector& rhs);
+
+  friend EuclideanVector operator /(const EuclideanVector& lhs, const int divison);
+
+  friend ostream& operator <<(ostream& os, const EuclideanVector& obj);
+
   void display() {
     cout << "size is " << this -> size_ << "\n";
     cout << "dimension is\n";
@@ -65,7 +98,6 @@ class EuclideanVector {
       cout << this -> magnitudes_.get()[ i ] << "\n";
     }
   }
-
   // TODO(you): add more
  private:
   int size_;
@@ -76,3 +108,4 @@ class EuclideanVector {
 };
 
 #endif //ASS2_EUCLIDEAN_VECTOR_H
+
