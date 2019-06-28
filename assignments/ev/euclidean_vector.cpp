@@ -313,6 +313,6 @@ ostream& operator <<(ostream& out, const EuclideanVector& obj)
             output = output +  " " + to_string(obj.magnitudes_.get()[ i ]);
         }
     }
-    out << "[ " << output << " ]\n";
+    out << "[" << output << "]\n";
     return out;
 }
