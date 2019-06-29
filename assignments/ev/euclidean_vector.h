@@ -39,7 +39,7 @@ class EuclideanVector {
 
   EuclideanVector(EuclideanVector && another) noexcept;
 
-  ~EuclideanVector();
+  ~EuclideanVector() = default;
 
   // nothrow
   friend void DefinedSwap(EuclideanVector & first, EuclideanVector & second); 
@@ -51,13 +51,13 @@ class EuclideanVector {
 
   double& operator [](const int index);
 
-  EuclideanVector& operator +=(EuclideanVector& rhs);
+  EuclideanVector& operator +=(const EuclideanVector& rhs);
 
-  EuclideanVector& operator -=(EuclideanVector& rhs);
+  EuclideanVector& operator -=(const EuclideanVector& rhs);
 
-  EuclideanVector& operator *=(const int scalar);
+  EuclideanVector& operator *=(const double scalar);
 
-  EuclideanVector& operator /=(const int scalar);
+  EuclideanVector& operator /=(const double scalar);
 
   explicit operator std::vector<double>();
 
@@ -83,11 +83,11 @@ class EuclideanVector {
 
   // EuclideanVector operator *(EuclideanVector& rhs);
 
-  friend EuclideanVector operator *(const EuclideanVector& lhs, const int scalar);
+  friend EuclideanVector operator *(const EuclideanVector& lhs, const double scalar);
 
-  friend EuclideanVector operator *(const int scalar, const EuclideanVector& rhs);
+  friend EuclideanVector operator *(const double scalar, const EuclideanVector& rhs);
 
-  friend EuclideanVector operator /(const EuclideanVector& lhs, const int divison);
+  friend EuclideanVector operator /(const EuclideanVector& lhs, const double division);
 
   friend ostream& operator <<(ostream& os, const EuclideanVector& obj);
 

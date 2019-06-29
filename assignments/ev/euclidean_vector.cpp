@@ -68,11 +68,6 @@ EuclideanVector::EuclideanVector(EuclideanVector&& another) noexcept : size_{ano
     cout << "move construct\n";
 }
 
-EuclideanVector::~EuclideanVector() 
-{
-    cout << "destruction\n";
-}
-
 void DefinedSwap(EuclideanVector& first, EuclideanVector & second)
 {
     swap( first.size_, second.size_ );
@@ -95,7 +90,7 @@ EuclideanVector & EuclideanVector::operator =( const EuclideanVector & rhs )
     return * this;
 }
 
-EuclideanVector EuclideanVector::operator =( EuclideanVector&& rhs ) noexcept
+EuclideanVector EuclideanVector::operator =(EuclideanVector&& rhs) noexcept
 {
     cout << "move operator =\n";
     DefinedSwap( *this, rhs );
@@ -108,7 +103,7 @@ double& EuclideanVector::operator [](const int index)
     return this -> magnitudes_.get()[ index ];
 }
 
-EuclideanVector& EuclideanVector::operator +=(EuclideanVector& rhs)
+EuclideanVector& EuclideanVector::operator +=(const EuclideanVector& rhs)
 {
     cout << "operator +=\n";
     if( this -> size_ != rhs.size_ ) {
@@ -120,7 +115,7 @@ EuclideanVector& EuclideanVector::operator +=(EuclideanVector& rhs)
     return * this;
 }
 
-EuclideanVector& EuclideanVector::operator -=(EuclideanVector& rhs)
+EuclideanVector& EuclideanVector::operator -=(const EuclideanVector& rhs)
 {
     cout << "operator -=\n";
     if( this -> size_ != rhs.size_ ) {
@@ -132,7 +127,7 @@ EuclideanVector& EuclideanVector::operator -=(EuclideanVector& rhs)
     return * this;
 }
 
-EuclideanVector& EuclideanVector::operator *=(const int scalar)
+EuclideanVector& EuclideanVector::operator *=(const double scalar)
 {
     cout << "operator *=\n";
     for( int i = 0 ; i < this -> size_ ; i++ ) {
@@ -141,7 +136,7 @@ EuclideanVector& EuclideanVector::operator *=(const int scalar)
     return * this;
 }
 
-EuclideanVector& EuclideanVector::operator /=(const int scalar)
+EuclideanVector& EuclideanVector::operator /=(const double scalar)
 {
     cout << "operator /=\n";
     if( scalar == 0 ) {
@@ -266,12 +261,12 @@ double operator *(const EuclideanVector& lhs, const EuclideanVector& rhs)
     }
     double temp{0};
     for( int i = 0 ; i < lhs.size_ ; i++ ) {
-        temp  = lhs.magnitudes_.get()[ i ] * rhs.magnitudes_.get()[ i ];
+        temp  = temp + lhs.magnitudes_.get()[ i ] * rhs.magnitudes_.get()[ i ];
     }
     return temp;
 }
 
-EuclideanVector operator *(const EuclideanVector& lhs, const int scalar)
+EuclideanVector operator *(const EuclideanVector& lhs, const double scalar)
 {
     cout << "operator non reference scalar on right *\n";
     EuclideanVector temp( lhs.size_ ); 
@@ -281,7 +276,7 @@ EuclideanVector operator *(const EuclideanVector& lhs, const int scalar)
     return temp;
 }
 
-EuclideanVector operator *(const int scalar, const EuclideanVector& rhs)
+EuclideanVector operator *(const double scalar, const EuclideanVector& rhs)
 {
     cout << "operator non reference scalar on left *\n";
     EuclideanVector temp( rhs.size_ ); 
@@ -291,7 +286,7 @@ EuclideanVector operator *(const int scalar, const EuclideanVector& rhs)
     return temp;
 }
 
-EuclideanVector operator /(const EuclideanVector& lhs, const int division)
+EuclideanVector operator /(const EuclideanVector& lhs, const double division)
 {
     cout << "operator arithmetic /\n";
     if( division == 0 ) {
