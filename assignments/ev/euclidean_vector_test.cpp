@@ -20,7 +20,6 @@
  * get() returns the reference of the unique_ptr
  */
 SCENARIO("check constructor") {
-
   GIVEN("check GetNumDimensions()") {
     int size = 3;
     EuclideanVector test1( size );
