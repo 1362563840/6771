@@ -1,8 +1,8 @@
 // #include "assignments/ev/euclidean_vector.h"
 #include "euclidean_vector.h"
 
-#include <cassert>
 #include <algorithm>  
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <list>
@@ -62,7 +62,7 @@ EuclideanVector::EuclideanVector(const EuclideanVector& another) : size_{ anothe
     }
 }
 
-EuclideanVector::EuclideanVector(EuclideanVector&& another) : size_{another.size_} 
+EuclideanVector::EuclideanVector(EuclideanVector&& another) noexcept : size_{another.size_} 
                                                             ,magnitudes_{ move(another.magnitudes_) } 
 {
     cout << "move construct\n";
@@ -95,7 +95,7 @@ EuclideanVector & EuclideanVector::operator =( const EuclideanVector & rhs )
     return * this;
 }
 
-EuclideanVector EuclideanVector::operator =( EuclideanVector&& rhs ) 
+EuclideanVector EuclideanVector::operator =( EuclideanVector&& rhs ) noexcept
 {
     cout << "move operator =\n";
     DefinedSwap( *this, rhs );

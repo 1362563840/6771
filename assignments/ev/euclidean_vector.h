@@ -26,18 +26,18 @@ class EuclideanVectorError : public std::exception {
 
 class EuclideanVector {
  public:
-  explicit EuclideanVector(int i);
+  EuclideanVector(int i);
 
-  explicit EuclideanVector(int i, double j);
+  EuclideanVector(int i, double j);
 
-  explicit 	EuclideanVector(std::vector<double>::const_iterator start, std::vector<double>::const_iterator end);
+  EuclideanVector(std::vector<double>::const_iterator start, std::vector<double>::const_iterator end);
 
   // explicit  EuclideanVector(EuclideanVector & another);
   EuclideanVector(EuclideanVector & another);
 
-  explicit  EuclideanVector(const EuclideanVector & another);
+  EuclideanVector(const EuclideanVector & another);
 
-  explicit  EuclideanVector(EuclideanVector && another) noexcept;
+  EuclideanVector(EuclideanVector && another) noexcept;
 
   ~EuclideanVector();
 
@@ -97,6 +97,9 @@ class EuclideanVector {
     for( int i = 0 ; i < this -> size_ ; i++ ) {
       cout << this -> magnitudes_.get()[ i ] << "\n";
     }
+  }
+  std::unique_ptr<double[]>& get() {
+    return this->magnitudes_;
   }
 
  private:
