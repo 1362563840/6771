@@ -7,13 +7,13 @@
    and why you think your tests are that thorough.
 
 */
-
 #include "assignments/ev/euclidean_vector.h"
-#include "catch.h"
 
 #include <cmath>
 #include <utility>
 #include <vector>
+
+#include "catch.h"
 
 /**
  * scenario 1
