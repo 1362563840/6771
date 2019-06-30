@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iostream>
 #include <list>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,6 +16,7 @@ using std::exception;
 using std::list;
 using std::ostream;
 using std::sqrt;
+using std::stringstream;
 using std::string;
 using std::swap;
 using std::to_string;
@@ -107,7 +109,10 @@ EuclideanVector& EuclideanVector::operator +=(const EuclideanVector& rhs)
 {
     cout << "operator +=\n";
     if( this -> size_ != rhs.size_ ) {
-        throw "Dimensions of LHS(X) and RHS(Y) do not match";
+        stringstream ss;
+        ss << "Dimensions of LHS(" << this -> size_ << ") ";
+        ss << "and RHS(" << rhs.size_ << ")" << " do not match";
+        throw std::runtime_error( ss.str() );
     }
     for( int i = 0 ; i < this -> size_ ; i++ ) {
         this -> magnitudes_.get()[ i ]  = this -> magnitudes_.get()[ i ] + rhs.magnitudes_.get()[ i ];
@@ -119,7 +124,10 @@ EuclideanVector& EuclideanVector::operator -=(const EuclideanVector& rhs)
 {
     cout << "operator -=\n";
     if( this -> size_ != rhs.size_ ) {
-        throw "Dimensions of LHS(X) and RHS(Y) do not match";
+        stringstream ss;
+        ss << "Dimensions of LHS(" << this -> size_ << ") ";
+        ss << "and RHS(" << rhs.size_ << ")" << " do not match";
+        throw std::runtime_error( ss.str() );
     }
     for( int i = 0 ; i < this -> size_ ; i++ ) {
         this -> magnitudes_.get()[ i ]  = this -> magnitudes_.get()[ i ] - rhs.magnitudes_.get()[ i ];
@@ -140,7 +148,9 @@ EuclideanVector& EuclideanVector::operator /=(const double scalar)
 {
     cout << "operator /=\n";
     if( scalar == 0 ) {
-        throw "Invalid vector division by 0";
+        stringstream ss;
+        ss << "Invalid vector division by 0";
+        throw std::runtime_error( ss.str() );
     }
     for( int i = 0 ; i < this -> size_ ; i++ ) {
         this -> magnitudes_.get()[ i ]  = this -> magnitudes_.get()[ i ] / scalar;
@@ -169,7 +179,9 @@ EuclideanVector::operator std::list<double>()
 double EuclideanVector::at(int index)
 {
     if( index < 0 || index >= this -> size_ ) {
-        throw "Index X is not valid for this EuclideanVector object";
+        stringstream ss;
+        ss << "Index " << index << " is not valid for this EuclideanVector object";
+        throw std::runtime_error( ss.str() );
     }
     return this -> magnitudes_.get()[ index ];
 }
@@ -181,6 +193,11 @@ int EuclideanVector::GetNumDimensions()
 
 double EuclideanVector::GetEuclideanNorm()
 {
+    if( this -> GetNumDimensions() == 0 ) {
+        stringstream ss;
+        ss << "EuclideanVector with no dimensions does not have a norm";
+        throw std::runtime_error( ss.str() );
+    }
     double sum{0};
     for( int i = 0 ; i < this -> size_ ; i++ ) {
         sum = sum + this -> magnitudes_.get()[ i ] * this -> magnitudes_.get()[ i ];
@@ -191,7 +208,9 @@ double EuclideanVector::GetEuclideanNorm()
 EuclideanVector EuclideanVector::CreateUnitVector()
 {
     if( this -> size_ == 0 ) {
-        throw "EuclideanVector with no dimensions does not have a unit vector";
+        stringstream ss;
+        ss << "EuclideanVector with no dimensions does not have a unit vector";
+        throw std::runtime_error( ss.str() );
     }
     double norm = this -> GetEuclideanNorm();
 
@@ -231,7 +250,10 @@ EuclideanVector operator +(const EuclideanVector& lhs, const EuclideanVector& rh
 {
     cout << "operator +\n";
     if( lhs.size_ != rhs.size_ ) {
-        throw "Dimensions of LHS(X) and RHS(Y) do not match";
+        stringstream ss;
+        ss << "Dimensions of LHS(" << lhs.size_ << ") ";
+        ss << "and RHS(" << rhs.size_ << ")" << " do not match";
+        throw std::runtime_error( ss.str() );
     }
     EuclideanVector temp( lhs.size_ ); 
     for( int i = 0 ; i < lhs.size_ ; i++ ) {
@@ -244,7 +266,10 @@ EuclideanVector operator -(const EuclideanVector& lhs, const EuclideanVector& rh
 {
     cout << "operator -\n";
     if( lhs.size_ != rhs.size_ ) {
-        throw "Dimensions of LHS(X) and RHS(Y) do not match";
+        stringstream ss;
+        ss << "Dimensions of LHS(" << lhs.size_ << ") ";
+        ss << "and RHS(" << rhs.size_ << ")" << " do not match";
+        throw std::runtime_error( ss.str() );
     }
     EuclideanVector temp( lhs.size_ ); 
     for( int i = 0 ; i < lhs.size_ ; i++ ) {
@@ -257,7 +282,10 @@ double operator *(const EuclideanVector& lhs, const EuclideanVector& rhs)
 {
     cout << "dot product operator *\n";
     if( lhs.size_ != rhs.size_ ) {
-        throw "Dimensions of LHS(X) and RHS(Y) do not match";
+        stringstream ss;
+        ss << "Dimensions of LHS(" << lhs.size_ << ") ";
+        ss << "and RHS(" << rhs.size_ << ")" << " do not match";
+        throw std::runtime_error( ss.str() );
     }
     double temp{0};
     for( int i = 0 ; i < lhs.size_ ; i++ ) {
@@ -290,7 +318,9 @@ EuclideanVector operator /(const EuclideanVector& lhs, const double division)
 {
     cout << "operator arithmetic /\n";
     if( division == 0 ) {
-        throw "Invalid vector division by 0";
+        stringstream ss;
+        ss << "Invalid vector division by 0";
+        throw std::runtime_error( ss.str() );
     }
     EuclideanVector temp( lhs.size_ ); 
     for( int i = 0 ; i <  lhs.size_ ; i++ ) {
