@@ -212,7 +212,13 @@ EuclideanVector EuclideanVector::CreateUnitVector()
         ss << "EuclideanVector with no dimensions does not have a unit vector";
         throw std::runtime_error( ss.str() );
     }
+    
     double norm = this -> GetEuclideanNorm();
+    if( norm == 0 ) {
+        stringstream ss;
+        ss << "EuclideanVector with euclidean normal of 0 does not have a unit vector";
+        throw std::runtime_error( ss.str() );
+    }
 
     EuclideanVector temp(*this);
     temp /= norm;
