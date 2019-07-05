@@ -22,14 +22,14 @@
 SCENARIO("check constructor") {
   GIVEN("check GetNumDimensions()") {
     int size = 3;
-    EuclideanVector test1( size );
+    EuclideanVector test1{ size };
 
     REQUIRE(test1.GetNumDimensions() == size );
   }
 
   GIVEN("test default constructor") {
     int size = 3;
-    EuclideanVector test1( size );
+    EuclideanVector test1{ size };
 
     REQUIRE(test1.GetNumDimensions() == size );
     REQUIRE(test1.get()[0] == 0 );
@@ -40,7 +40,7 @@ SCENARIO("check constructor") {
   GIVEN("test second constructor with int and double") {
     int size = 4;
     double value = 2.5;
-    EuclideanVector test1( size, value );
+    EuclideanVector test1{ size, value };
     REQUIRE(test1.GetNumDimensions() == size );
     REQUIRE(test1.get()[0] == value );
     REQUIRE(test1.get()[1] == value );
@@ -55,7 +55,7 @@ SCENARIO("check constructor") {
     temp.push_back(2);
     temp.push_back(3);
     temp.push_back(4);
-    EuclideanVector test1(temp.cbegin(), temp.cend());
+    EuclideanVector test1{temp.cbegin(), temp.cend()};
     REQUIRE(test1.GetNumDimensions() == size );
     REQUIRE(test1.get()[0] == 1 );
     REQUIRE(test1.get()[1] == 2 );
@@ -68,8 +68,8 @@ SCENARIO("check constructor") {
   GIVEN("test fourth construct, copy constructor") {
     int size = 3;
     double value = 4;
-    EuclideanVector test( size, value );
-    EuclideanVector test1(test);
+    EuclideanVector test{ size, value };
+    EuclideanVector test1{test};
     REQUIRE(test.GetNumDimensions() == size );
     REQUIRE(test.get()[0] == value );
     REQUIRE(test.get()[1] == value );
@@ -84,8 +84,8 @@ SCENARIO("check constructor") {
   GIVEN("test fifth construct, move construsctor") {
     int size = 4;
     double value = 5.5;
-    EuclideanVector test( size, value );
-    EuclideanVector test1(std::move(test));
+    EuclideanVector test{ size, value };
+    EuclideanVector test1{std::move(test)};
 
     REQUIRE(test1.GetNumDimensions() == size );
     REQUIRE(test1.get()[0] == value );
@@ -107,8 +107,8 @@ SCENARIO("check member operator") {
     double value = 1.9;
     int size_1 = 3;
     double value_1 = 2.6;
-    EuclideanVector test1( size, value );
-    EuclideanVector test2( size_1, value_1 );
+    EuclideanVector test1{ size, value };
+    EuclideanVector test2{ size_1, value_1 };
 
     DefinedSwap( test1, test2 );
 
@@ -127,8 +127,8 @@ SCENARIO("check member operator") {
     double value = 6.7;
     int size_1 = 3;
     double value_1 = 2.1;
-    EuclideanVector test1( size, value );
-    EuclideanVector test2( size_1, value_1 );
+    EuclideanVector test1{ size, value };
+    EuclideanVector test2{ size_1, value_1 };
 
     test1 = test2;
 
@@ -148,8 +148,8 @@ SCENARIO("check member operator") {
     double value = 2.8;
     int size_1 = 3;
     double value_1 = 6.1;
-    EuclideanVector test1( size, value );
-    EuclideanVector test2( size_1, value_1 );
+    EuclideanVector test1{ size, value };
+    EuclideanVector test2{ size_1, value_1 };
 
     test1 = std::move(test2);
 
@@ -165,7 +165,7 @@ SCENARIO("check member operator") {
   GIVEN("check operator = self assignment") {
     int size = 5;
     double value = 6.7;
-    EuclideanVector test1( size, value );
+    EuclideanVector test1{ size, value };
 
     test1 = test1;
 
@@ -182,8 +182,8 @@ SCENARIO("check member operator") {
     double value = 2.8;
     int size_1 = 4;
     double value_1 = 3.7;
-    EuclideanVector test1( size, value );
-    EuclideanVector test2( size_1, value_1 );
+    EuclideanVector test1{ size, value };
+    EuclideanVector test2{ size_1, value_1 };
 
     test1 += test2;
 
@@ -199,8 +199,8 @@ SCENARIO("check member operator") {
     double value = 2.8;
     int size_1 = 4;
     double value_1 = 3.7;
-    EuclideanVector test1( size, value );
-    EuclideanVector test2( size_1, value_1 );
+    EuclideanVector test1{ size, value };
+    EuclideanVector test2{ size_1, value_1 };
 
     test1 -= test2;
 
@@ -215,7 +215,7 @@ SCENARIO("check member operator") {
     int size = 4;
     double value = 2.8;
     double value_1 = 8.2;
-    EuclideanVector test1( size, value );
+    EuclideanVector test1{ size, value };
 
     test1 *= value_1;
 
@@ -230,7 +230,7 @@ SCENARIO("check member operator") {
     int size = 4;
     double value = 2.8;
     double value_1 = 8.2;
-    EuclideanVector test1( size, value );
+    EuclideanVector test1{ size, value };
 
     test1 /= value_1;
 
@@ -248,7 +248,7 @@ SCENARIO("check member operator") {
     temp.push_back(2);
     temp.push_back(3);
     temp.push_back(4);
-    EuclideanVector test1(temp.cbegin(), temp.cend());
+    EuclideanVector test1{temp.cbegin(), temp.cend()};
 
     std::vector<double> result = (std::vector<double>)test1;
 
@@ -266,7 +266,7 @@ SCENARIO("check member operator") {
     temp.push_back(2);
     temp.push_back(3);
     temp.push_back(4);
-    EuclideanVector test1(temp.cbegin(), temp.cend());
+    EuclideanVector test1{temp.cbegin(), temp.cend()};
 
     std::list<double> result = (std::list<double>)test1;
 
@@ -301,7 +301,7 @@ SCENARIO("check member methods") {
     temp.push_back(2);
     temp.push_back(3);
     temp.push_back(4);
-    EuclideanVector test1(temp.cbegin(), temp.cend());
+    EuclideanVector test1{temp.cbegin(), temp.cend()};
 
     REQUIRE(test1.GetNumDimensions() == size );
 
@@ -318,7 +318,7 @@ SCENARIO("check member methods") {
     temp.push_back(2);
     temp.push_back(3);
     temp.push_back(4);
-    EuclideanVector test1(temp.cbegin(), temp.cend());
+    EuclideanVector test1{temp.cbegin(), temp.cend()};
 
     REQUIRE(test1.GetEuclideanNorm() == ( std::sqrt( 1 * 1 + 2 * 2 + 3 * 3 + 4 * 4 ) ) );
   }
@@ -330,7 +330,7 @@ SCENARIO("check member methods") {
     temp.push_back(2);
     temp.push_back(3);
     temp.push_back(4);
-    EuclideanVector test1(temp.cbegin(), temp.cend());
+    EuclideanVector test1{temp.cbegin(), temp.cend()};
 
     EuclideanVector test2 = test1.CreateUnitVector();
 
@@ -350,9 +350,9 @@ SCENARIO("check friend operator") {
   GIVEN("test comparison operator == ") {
     int size = 4;
     double value = 2.5;
-    EuclideanVector test1( size, value );
+    EuclideanVector test1{ size, value };
 
-    EuclideanVector test2( size, value );
+    EuclideanVector test2{ size, value };
 
     REQUIRE( ( test1 == test2 ) == true );
   }
@@ -360,7 +360,7 @@ SCENARIO("check friend operator") {
   GIVEN("test comparison operator == for self ") {
     int size = 4;
     double value = 2.5;
-    EuclideanVector test1( size, value );
+    EuclideanVector test1{ size, value };
 
     REQUIRE( ( test1 == test1 ) == true );
   }
@@ -368,9 +368,9 @@ SCENARIO("check friend operator") {
   GIVEN("test comparison operator != ") {
     int size = 4;
     double value = 2.5;
-    EuclideanVector test1( size, value );
+    EuclideanVector test1{ size, value };
 
-    EuclideanVector test2( size, value );
+    EuclideanVector test2{ size, value };
 
     REQUIRE( ( test1 != test2 ) == false );
   }
@@ -380,8 +380,8 @@ SCENARIO("check friend operator") {
     double value = 2.8;
     int size_1 = 4;
     double value_1 = 3.7;
-    EuclideanVector test1( size, value );
-    EuclideanVector test2( size_1, value_1 );
+    EuclideanVector test1{ size, value };
+    EuclideanVector test2{ size_1, value_1 };
 
     EuclideanVector test3 = test1 + test2;
 
@@ -397,8 +397,8 @@ SCENARIO("check friend operator") {
     double value = 2.8;
     int size_1 = 4;
     double value_1 = 3.7;
-    EuclideanVector test1( size, value );
-    EuclideanVector test2( size_1, value_1 );
+    EuclideanVector test1{ size, value };
+    EuclideanVector test2{ size_1, value_1 };
 
     EuclideanVector test3 = test1 - test2;
 
@@ -414,8 +414,8 @@ SCENARIO("check friend operator") {
     double value = 2.8;
     int size_1 = 4;
     double value_1 = 3.7;
-    EuclideanVector test1( size, value );
-    EuclideanVector test2( size_1, value_1 );
+    EuclideanVector test1{ size, value };
+    EuclideanVector test2{ size_1, value_1 };
 
     double result = test1 * test2;
 
@@ -426,7 +426,7 @@ SCENARIO("check friend operator") {
     int size = 4;
     double value = 9.1;
     double value_1 = 1.9;
-    EuclideanVector test1( size, value );
+    EuclideanVector test1{ size, value };
 
     EuclideanVector test3 = test1 * value_1;
 
@@ -441,7 +441,7 @@ SCENARIO("check friend operator") {
     int size = 4;
     double value = 6.7;
     double value_1 = 7.6;
-    EuclideanVector test1( size, value );
+    EuclideanVector test1{ size, value };
 
     EuclideanVector test3 = value_1 * test1;
 
@@ -456,7 +456,7 @@ SCENARIO("check friend operator") {
     int size = 4;
     double value = 4.8;
     double value_1 = 8.4;
-    EuclideanVector test1( size, value );
+    EuclideanVector test1{ size, value };
 
     EuclideanVector test3 = test1 / value_1;
 
