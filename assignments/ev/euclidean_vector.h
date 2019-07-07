@@ -63,7 +63,9 @@ class EuclideanVector {
 
   explicit operator std::list<double>();
 
-  double at(int index);
+  double at(int index) const;
+
+  double& at(int index);
 
   int GetNumDimensions();
 
@@ -89,7 +91,7 @@ class EuclideanVector {
 
   friend EuclideanVector operator /(const EuclideanVector& lhs, const double division);
 
-  friend ostream& operator <<(ostream& os, const EuclideanVector& obj);
+  friend ostream& operator <<(ostream& out, const EuclideanVector& obj);
 
   void display() {
     cout << "size is " << this -> size_ << "\n";

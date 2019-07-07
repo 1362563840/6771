@@ -68,6 +68,7 @@ EuclideanVector::EuclideanVector(EuclideanVector&& another) noexcept : size_{ano
                                                             ,magnitudes_{ move(another.magnitudes_) } 
 {
     cout << "move construct\n";
+    another.size_ = 0;
 }
 
 void DefinedSwap(EuclideanVector& first, EuclideanVector & second)
@@ -95,12 +96,14 @@ EuclideanVector & EuclideanVector::operator =( const EuclideanVector & rhs )
 EuclideanVector EuclideanVector::operator =(EuclideanVector&& rhs) noexcept
 {
     cout << "move operator =\n";
-    DefinedSwap( *this, rhs );
+    this -> magnitudes_  = move(rhs.magnitudes_);
+    size_ = rhs.size_;
+    rhs.size_ = 0;
     return * this;
 }
 
 double& EuclideanVector::operator [](const int index)
-{
+{                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
     assert( index < this -> size_ );
     return this -> magnitudes_.get()[ index ];
 }
@@ -176,8 +179,20 @@ EuclideanVector::operator std::list<double>()
     return temp;
 }
 
-double EuclideanVector::at(int index)
+double EuclideanVector::at(int index) const
 {
+    cout << "const copy at" << "\n";
+    if( index < 0 || index >= this -> size_ ) {
+        stringstream ss;
+        ss << "Index " << index << " is not valid for this EuclideanVector object";
+        throw std::runtime_error( ss.str() );
+    }
+    return this -> magnitudes_.get()[ index ];
+}
+
+double& EuclideanVector::at(int index)
+{
+    cout << "reference at" << "\n";
     if( index < 0 || index >= this -> size_ ) {
         stringstream ss;
         ss << "Index " << index << " is not valid for this EuclideanVector object";

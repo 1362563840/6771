@@ -1,10 +1,14 @@
 /*
 
-  == Explanation and rational of testing ==
+  I test sequentially based on the order given in specs
+  For each task(in specs), I test if it works for normal conditions. Also, I test if it should throw exception 
+                                                                        when conditions are not satisfied
 
-  Explain and justify how you approached testing, the degree
-   to which you're certain you have covered all possibilities,
-   and why you think your tests are that thorough.
+  Most possible conditions are considered
+
+  Assert can not be tested using catch2
+
+  
 
 */
 #include "assignments/ev/euclidean_vector.h"
@@ -177,7 +181,20 @@ SCENARIO("check member operator") {
     REQUIRE(test1.get()[4] == value );
   }
 
-  GIVEN("check operator += successful") {
+  /**
+   * since catch2 does not support assert
+   * so invalid exception is tested manually
+   */
+  GIVEN("check subscript") {
+    int size = 2;
+    double value = 3.1;
+    EuclideanVector test1{ size, value };
+
+    REQUIRE(test1[0] == value );
+    REQUIRE(test1[1] == value );
+  }
+
+  GIVEN("check operator += valid and invalid") {
     int size = 4;
     double value = 2.8;
     int size_1 = 4;
@@ -192,9 +209,12 @@ SCENARIO("check member operator") {
     REQUIRE(test1.get()[1] == ( value + value_1 ) );
     REQUIRE(test1.get()[2] == ( value + value_1 ) );
     REQUIRE(test1.get()[3] == ( value + value_1 ) );
+
+    EuclideanVector test3{ size_1 + 1, value_1 };
+    REQUIRE_THROWS( test1 += test3 );
   }
 
-  GIVEN("check operator -= successful") {
+  GIVEN("check operator -= valid and invalid") {
     int size = 4;
     double value = 2.8;
     int size_1 = 4;
@@ -209,9 +229,12 @@ SCENARIO("check member operator") {
     REQUIRE(test1.get()[1] == ( value - value_1 ) );
     REQUIRE(test1.get()[2] == ( value - value_1 ) );
     REQUIRE(test1.get()[3] == ( value - value_1 ) );
+
+    EuclideanVector test3{ size_1 + 1, value_1 };
+    REQUIRE_THROWS( test1 -= test3 );
   }
 
-  GIVEN("check operator *= successful") {
+  GIVEN("check operator *= all valid") {
     int size = 4;
     double value = 2.8;
     double value_1 = 8.2;
@@ -226,7 +249,7 @@ SCENARIO("check member operator") {
     REQUIRE(test1.get()[3] == ( value * value_1 ) );
   }
 
-  GIVEN("check operator /= successful") {
+  GIVEN("check operator /= valid and invalid") {
     int size = 4;
     double value = 2.8;
     double value_1 = 8.2;
@@ -239,6 +262,8 @@ SCENARIO("check member operator") {
     REQUIRE(test1.get()[1] == ( value / value_1 ) );
     REQUIRE(test1.get()[2] == ( value / value_1 ) );
     REQUIRE(test1.get()[3] == ( value / value_1 ) );
+
+    REQUIRE_THROWS( test1 /= 0 );
   }
 
   GIVEN("check convert to vector") {
@@ -294,6 +319,10 @@ SCENARIO("check member operator") {
  * scenario 3
  */
 SCENARIO("check member methods") {
+  /**
+   * because when variable is not const, it returns referencce, so can use assignment
+   * But when variable is const, it returns rvalue, so only use ==
+   */
   GIVEN("check at()") {
     int size = 4;
     std::vector<double> temp;
@@ -309,6 +338,14 @@ SCENARIO("check member methods") {
     REQUIRE(test1.at(1) == 2 );
     REQUIRE(test1.at(2) == 3 );
     REQUIRE(test1.at(3) == 4 );
+
+    REQUIRE_THROWS(test1.at(-1) = 1 );
+    REQUIRE_THROWS(test1.at(4) = 1 );
+
+    const EuclideanVector test2{temp.cbegin(), temp.cend()};
+
+    REQUIRE_THROWS(test1.at(-1) == 1 );
+    REQUIRE_THROWS(test1.at(4) == 1 );
   }
 
   GIVEN("check GetEuclideanNorm()") {
@@ -321,6 +358,9 @@ SCENARIO("check member methods") {
     EuclideanVector test1{temp.cbegin(), temp.cend()};
 
     REQUIRE(test1.GetEuclideanNorm() == ( std::sqrt( 1 * 1 + 2 * 2 + 3 * 3 + 4 * 4 ) ) );
+
+    EuclideanVector test2{0};
+    REQUIRE_THROWS(test2.GetEuclideanNorm() );
   }
 
   GIVEN("check CreateUnitVector()") {
@@ -340,6 +380,9 @@ SCENARIO("check member methods") {
     REQUIRE(test2.at(1) == 2 / div );
     REQUIRE(test2.at(2) == 3 / div );
     REQUIRE(test2.at(3) == 4 / div );
+
+    EuclideanVector test3{0};
+    REQUIRE_THROWS(test3.CreateUnitVector() );
   }
 }
 
@@ -369,10 +412,37 @@ SCENARIO("check friend operator") {
     int size = 4;
     double value = 2.5;
     EuclideanVector test1{ size, value };
-
+    
     EuclideanVector test2{ size, value };
 
     REQUIRE( ( test1 != test2 ) == false );
+  }
+  
+  /**
+   * test when size is same, but certain element in dimension is not same
+   */
+  GIVEN("test comparison operator != element not same but size same") {
+    int size = 4;
+    double value = 2.5;
+    EuclideanVector test1{ size, value };
+    std::vector<double> temp;
+    temp.push_back(value);
+    temp.push_back(value);
+    temp.push_back(value);
+    temp.push_back(value + 1);
+    EuclideanVector test2{ temp.cbegin(), temp.cend() };
+
+    REQUIRE( ( test1 != test2 ) == true );
+  }
+
+  GIVEN("test comparison operator != not same size") {
+    int size = 4;
+    double value = 2.5;
+    EuclideanVector test1{ size, value };
+    
+    EuclideanVector test2{ size + 1, value };
+
+    REQUIRE( ( test1 != test2 ) == true );
   }
 
   GIVEN("check operator + ") {
@@ -390,6 +460,9 @@ SCENARIO("check friend operator") {
     REQUIRE(test3.at(1) == ( value + value_1 ) );
     REQUIRE(test3.at(2) == ( value + value_1 ) );
     REQUIRE(test3.at(3) == ( value + value_1 ) );
+
+    EuclideanVector test4{ size_1 + 1, value_1 };
+    REQUIRE_THROWS( test1 + test4 );
   }
 
   GIVEN("check operator - ") {
@@ -407,6 +480,9 @@ SCENARIO("check friend operator") {
     REQUIRE(test3.at(1) == ( value - value_1 ) );
     REQUIRE(test3.at(2) == ( value - value_1 ) );
     REQUIRE(test3.at(3) == ( value - value_1 ) );
+
+    EuclideanVector test4{ size_1 + 1, value_1 };
+    REQUIRE_THROWS( test1 - test4 );
   }
 
   GIVEN("check operator * dot product ") {
@@ -420,6 +496,9 @@ SCENARIO("check friend operator") {
     double result = test1 * test2;
 
     REQUIRE( result == ( 2.8*3.7*4 ) );
+
+    EuclideanVector test3{ size_1 + 1, value_1 };
+    REQUIRE_THROWS( test1 * test3 );
   }
 
   GIVEN("check operator *, scalar in right hand side") {
@@ -465,5 +544,17 @@ SCENARIO("check friend operator") {
     REQUIRE(test3.at(1) == ( value / value_1 ) );
     REQUIRE(test3.at(2) == ( value / value_1 ) );
     REQUIRE(test3.at(3) == ( value / value_1 ) );
+
+    REQUIRE_THROWS( test1 / 0 );
+  }
+
+  GIVEN("check operator / for 0 as denominator ") {
+    int size = 4;
+    double value = 4.8;
+    double value_1 = 0;
+    EuclideanVector test1{ size, value };
+
+    REQUIRE_THROWS_WITH( test1 / value_1, "Invalid vector division by 0" );
+    
   }
 }
