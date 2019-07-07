@@ -32,9 +32,6 @@ class EuclideanVector {
 
   EuclideanVector(std::vector<double>::const_iterator start, std::vector<double>::const_iterator end);
 
-  // explicit  EuclideanVector(EuclideanVector & another);
-  EuclideanVector(EuclideanVector & another);
-
   EuclideanVector(const EuclideanVector & another);
 
   EuclideanVector(EuclideanVector && another) noexcept;

@@ -27,7 +27,6 @@ EuclideanVector::EuclideanVector(int i) : EuclideanVector( i, 0 ) {}
 
 EuclideanVector::EuclideanVector(int i, double j) : size_{i}, magnitudes_{ make_unique<double[]>( i ) }
 {   
-    cout << "second constuct\n";
     for( int k = 0 ; k < i ; k++ ) {
         magnitudes_[ k ] = j;
     }
@@ -36,7 +35,6 @@ EuclideanVector::EuclideanVector(int i, double j) : size_{i}, magnitudes_{ make_
 EuclideanVector::EuclideanVector(std::vector<double>::const_iterator start
                                 ,std::vector<double>::const_iterator end) 
 {
-    cout << "iterator constuct\n";
     this -> size_ = end - start;
     this -> magnitudes_ = make_unique<double[]>( this -> size_ );
     int i = 0;
@@ -46,18 +44,8 @@ EuclideanVector::EuclideanVector(std::vector<double>::const_iterator start
     }
 }
 
-EuclideanVector::EuclideanVector(EuclideanVector & another) : size_{ another.size_ }
-{ 
-    cout << "non copy construct\n";
-    this -> magnitudes_ = make_unique<double[]>( this -> size_ );
-    for( int i = 0 ; i < this -> size_ ; i++ ) {
-      this -> magnitudes_.get()[ i ] = another.magnitudes_.get()[ i ];
-    }
-}
-
 EuclideanVector::EuclideanVector(const EuclideanVector& another) : size_{ another.size_ } 
 { 
-    cout << "const copy construct\n";
     this -> magnitudes_ = make_unique<double[]>( this -> size_ );
     for( int i = 0 ; i < this -> size_ ; i++ ) {
       this -> magnitudes_.get()[ i ] = another.magnitudes_.get()[ i ];
@@ -67,7 +55,6 @@ EuclideanVector::EuclideanVector(const EuclideanVector& another) : size_{ anothe
 EuclideanVector::EuclideanVector(EuclideanVector&& another) noexcept : size_{another.size_} 
                                                             ,magnitudes_{ move(another.magnitudes_) } 
 {
-    cout << "move construct\n";
     another.size_ = 0;
 }
 
@@ -83,9 +70,7 @@ void DefinedSwap(EuclideanVector& first, EuclideanVector & second)
  */
 EuclideanVector & EuclideanVector::operator =( const EuclideanVector & rhs ) 
 {
-    cout << "const operator =\n";
     if( this == &rhs ) {
-        cout << "self assignment\n";
         return *this;
     }
     EuclideanVector temp = EuclideanVector(rhs);
@@ -95,7 +80,6 @@ EuclideanVector & EuclideanVector::operator =( const EuclideanVector & rhs )
 
 EuclideanVector EuclideanVector::operator =(EuclideanVector&& rhs) noexcept
 {
-    cout << "move operator =\n";
     this -> magnitudes_  = move(rhs.magnitudes_);
     size_ = rhs.size_;
     rhs.size_ = 0;
@@ -105,12 +89,12 @@ EuclideanVector EuclideanVector::operator =(EuclideanVector&& rhs) noexcept
 double& EuclideanVector::operator [](const int index)
 {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
     assert( index < this -> size_ );
+    assert( index >= 0 );
     return this -> magnitudes_.get()[ index ];
 }
 
 EuclideanVector& EuclideanVector::operator +=(const EuclideanVector& rhs)
 {
-    cout << "operator +=\n";
     if( this -> size_ != rhs.size_ ) {
         stringstream ss;
         ss << "Dimensions of LHS(" << this -> size_ << ") ";
@@ -125,7 +109,6 @@ EuclideanVector& EuclideanVector::operator +=(const EuclideanVector& rhs)
 
 EuclideanVector& EuclideanVector::operator -=(const EuclideanVector& rhs)
 {
-    cout << "operator -=\n";
     if( this -> size_ != rhs.size_ ) {
         stringstream ss;
         ss << "Dimensions of LHS(" << this -> size_ << ") ";
@@ -140,7 +123,6 @@ EuclideanVector& EuclideanVector::operator -=(const EuclideanVector& rhs)
 
 EuclideanVector& EuclideanVector::operator *=(const double scalar)
 {
-    cout << "operator *=\n";
     for( int i = 0 ; i < this -> size_ ; i++ ) {
         this -> magnitudes_.get()[ i ]  = this -> magnitudes_.get()[ i ] * scalar;
     }
@@ -149,7 +131,6 @@ EuclideanVector& EuclideanVector::operator *=(const double scalar)
 
 EuclideanVector& EuclideanVector::operator /=(const double scalar)
 {
-    cout << "operator /=\n";
     if( scalar == 0 ) {
         stringstream ss;
         ss << "Invalid vector division by 0";
@@ -181,7 +162,6 @@ EuclideanVector::operator std::list<double>()
 
 double EuclideanVector::at(int index) const
 {
-    cout << "const copy at" << "\n";
     if( index < 0 || index >= this -> size_ ) {
         stringstream ss;
         ss << "Index " << index << " is not valid for this EuclideanVector object";
@@ -192,7 +172,6 @@ double EuclideanVector::at(int index) const
 
 double& EuclideanVector::at(int index)
 {
-    cout << "reference at" << "\n";
     if( index < 0 || index >= this -> size_ ) {
         stringstream ss;
         ss << "Index " << index << " is not valid for this EuclideanVector object";
@@ -269,7 +248,6 @@ bool operator !=(const EuclideanVector& lhs, const EuclideanVector& rhs)
 
 EuclideanVector operator +(const EuclideanVector& lhs, const EuclideanVector& rhs)
 {
-    cout << "operator +\n";
     if( lhs.size_ != rhs.size_ ) {
         stringstream ss;
         ss << "Dimensions of LHS(" << lhs.size_ << ") ";
@@ -285,7 +263,6 @@ EuclideanVector operator +(const EuclideanVector& lhs, const EuclideanVector& rh
 
 EuclideanVector operator -(const EuclideanVector& lhs, const EuclideanVector& rhs)
 {
-    cout << "operator -\n";
     if( lhs.size_ != rhs.size_ ) {
         stringstream ss;
         ss << "Dimensions of LHS(" << lhs.size_ << ") ";
@@ -301,7 +278,6 @@ EuclideanVector operator -(const EuclideanVector& lhs, const EuclideanVector& rh
 
 double operator *(const EuclideanVector& lhs, const EuclideanVector& rhs)
 {
-    cout << "dot product operator *\n";
     if( lhs.size_ != rhs.size_ ) {
         stringstream ss;
         ss << "Dimensions of LHS(" << lhs.size_ << ") ";
@@ -317,7 +293,6 @@ double operator *(const EuclideanVector& lhs, const EuclideanVector& rhs)
 
 EuclideanVector operator *(const EuclideanVector& lhs, const double scalar)
 {
-    cout << "operator non reference scalar on right *\n";
     EuclideanVector temp( lhs.size_ ); 
     for( int i = 0 ; i < lhs.size_ ; i++ ) {
         temp[ i ]  = lhs.magnitudes_.get()[ i ] * scalar;
@@ -327,7 +302,6 @@ EuclideanVector operator *(const EuclideanVector& lhs, const double scalar)
 
 EuclideanVector operator *(const double scalar, const EuclideanVector& rhs)
 {
-    cout << "operator non reference scalar on left *\n";
     EuclideanVector temp( rhs.size_ ); 
     for( int i = 0 ; i < rhs.size_ ; i++ ) {
         temp[ i ]  = scalar * rhs.magnitudes_.get()[ i ];
@@ -337,7 +311,6 @@ EuclideanVector operator *(const double scalar, const EuclideanVector& rhs)
 
 EuclideanVector operator /(const EuclideanVector& lhs, const double division)
 {
-    cout << "operator arithmetic /\n";
     if( division == 0 ) {
         stringstream ss;
         ss << "Invalid vector division by 0";
