@@ -1,7 +1,7 @@
 #include <iostream>
 #include <list>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "euclidean_vector.h"
 
@@ -63,5 +63,4 @@ int main() {
   for (auto d : lj) {
     std::cout << d << '\n';
   }
-
 }
