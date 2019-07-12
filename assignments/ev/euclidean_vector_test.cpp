@@ -8,7 +8,9 @@
 
   Assert can not be tested using catch2
 
-  
+  
+
+
 
 */
 #include "assignments/ev/euclidean_vector.h"
@@ -556,4 +558,15 @@ SCENARIO("check friend operator") {
 
     REQUIRE_THROWS_WITH(test1 / value_1, "Invalid vector division by 0");
   }
+}
+
+SCENARIO("continous") {
+  EuclideanVector test1{2,3};
+  EuclideanVector test2{2,4};
+  EuclideanVector test3{2,5};
+  test1 = test2 = test3;
+
+  REQUIRE(test1 == test2);
+  REQUIRE(test1 == test3);
+
 }

@@ -87,6 +87,12 @@ double &EuclideanVector::operator[](const int index) {
   return this->magnitudes_.get()[index];
 }
 
+double EuclideanVector::operator[](const int index) const {
+  assert(index < this->size_);
+  assert(index >= 0);
+  return this->magnitudes_.get()[index];
+}
+
 EuclideanVector &EuclideanVector::operator+=(const EuclideanVector &rhs) {
   if (this->size_ != rhs.size_) {
     stringstream ss;
@@ -170,7 +176,7 @@ double &EuclideanVector::at(int index) {
   return this->magnitudes_.get()[index];
 }
 
-int EuclideanVector::GetNumDimensions() { return this->size_; }
+int EuclideanVector::GetNumDimensions() const { return this->size_; }
 
 double EuclideanVector::GetEuclideanNorm() {
   if (this->GetNumDimensions() == 0) {
@@ -309,14 +315,24 @@ EuclideanVector operator/(const EuclideanVector &lhs, const double division) {
 }
 
 ostream &operator<<(ostream &out, const EuclideanVector &obj) {
-  string output{""};
+  // string output{""};
+  // for (int i = 0; i < obj.size_; i++) {
+  //   if (i == 0) {
+  //     output = output + to_string(obj.magnitudes_.get()[i]);
+  //   } else {
+  //     output = output + " " + to_string(obj.magnitudes_.get()[i]);
+  //   }
+  // }
+  // out << "[" << output << "]\n";
+
+  out << "[";
   for (int i = 0; i < obj.size_; i++) {
     if (i == 0) {
-      output = output + to_string(obj.magnitudes_.get()[i]);
+      out << obj.magnitudes_.get()[i];
     } else {
-      output = output + " " + to_string(obj.magnitudes_.get()[i]);
+      out << " " << obj.magnitudes_.get()[i];
     }
   }
-  out << "[" << output << "]\n";
+  out << "]";
   return out;
 }

@@ -48,6 +48,8 @@ class EuclideanVector {
 
   double& operator [](const int index);
 
+  double operator [](const int index) const;
+
   EuclideanVector& operator +=(const EuclideanVector& rhs);
 
   EuclideanVector& operator -=(const EuclideanVector& rhs);
@@ -64,7 +66,7 @@ class EuclideanVector {
 
   double& at(int index);
 
-  int GetNumDimensions();
+  int GetNumDimensions() const;
 
   double GetEuclideanNorm();
 
