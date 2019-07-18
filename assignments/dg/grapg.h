@@ -69,35 +69,57 @@ namespace gdwg {
                 if(  IsNode( src ) == true ||  IsNode( dest ) == true ) {
                     return false;
                 }
-                shared_ptr<N> temp_N_src_ptr = make_shared<N>( src );
-                shared_ptr<N> temp_N_dst_ptr = make_shared<N>( dst );
                 /**
-                 * 
+                 * There are two ways to check if such edge exists
+                 * one is direct way, using variables set "edges"
+                 * second way is to find src node, then use src node to find outcoming edges, then check if 
+                 * such one is satisfied
                  */
-                // check if this edge exists;                                   second is outcoming
-                shared_ptr<Node> temp_src_node = this->nodes_.find( temp_N_src_ptr )->second;
-                // check set "outcoming"
-                for( auto& it : temp_src_node.outcoming ) {
-                    shared_ptr<Node> edge_dest = it.dest_.lock();
-                    // after find Node "dest", need to access its name(N)
-                    shared_ptr<Node> edge_dest_name = edge_dest.name_.lock();
-                    if( *edge_dest_name == dest && it.weight_ == w ) {
-                        // found a same edge
-                        return false;
-                    }
-                }
+                //------------------------------------------------------- First way
+                // shared_ptr<N> temp_N_src_ptr = getNode( src );
+                // shared_ptr<N> temp_N_dest_ptr = getNode( dest );
+                // // check if this edge exists;                                   second is outcoming
+                // shared_ptr<Node> temp_src_node = this->nodes_.find( temp_N_src_ptr )->second;
+                // // check set "outcoming"
+                // for( auto& it : temp_src_node.outcoming ) {
+                //     shared_ptr<Node> edge_dest = it.dest_.lock();
+                //     // after find Node "dest", need to access its name(N)
+                //     shared_ptr<Node> edge_dest_name = edge_dest.name_.lock();
+                //     if( *edge_dest_name == dest && it.weight_ == w ) {
+                //         // found a same edge
+                //         return false;
+                //     }
+                // }
+                // // if it is new edge, insert
+                // /**
+                //  * need to add two sets, one is node(src).outcoming, second is node(dest).incoming
+                //  * In order to achieve goal "one resource per edge", only one make_shared,
+                //  */
                 
-                // if it is new edge, insert
-                /**
-                 * need to add two sets, one is node(src).outcoming, second is node(dest).incoming
-                 * In order to achieve goal "one resource per edge", only one make_shared,
-                 *                                                   but two pointer <---------------
-                 */ 
+                // // still use the variable "temp_src_node"
+                // shared_ptr<Node> temp_dest_node = this->nodes_.find( temp_N_dest_ptr )->second;
+                // shared_ptr<Edge> temp_edge = make_shared<Edge>( temp_src_node, temp_dest_node, w );
+                // temp_src_node.outcoming.insert(temp_edge);
+                // temp_dest_node.incoming.insert(temp_edge);
+                //------------------------------------------------------- First way
                 
-                // still use the variable "temp_src_node"
-                shared_ptr<>
-                temp_src_node.outcoming.
+                //------------------------------------------------------- Second way
 
+                shared_ptr<Edge> temp_edge = makeEdge( src, dest, w );
+
+                if( this->edges.find(temp_edge) != this->edges.end() ) {
+                    return false;
+                }
+                shared_ptr<Node> temp_src_node = getNode( src );
+                shared_ptr<Node> temp_dest_node = getNode( dest );
+
+                temp_src_node.outcoming.insert(temp_edge);
+                temp_dest_node.incoming.insert(temp_edge);
+
+                
+                //------------------------------------------------------- Second way
+
+                return true;
             }
 
             bool IsNode(const N& val)
@@ -108,6 +130,8 @@ namespace gdwg {
                 }
                 return true;
             }
+
+
         private:            
             struct Edge;
             struct Node;
@@ -126,6 +150,7 @@ namespace gdwg {
             //         return _lhs.name < _rhs.name;
             //     }
             // };
+
             struct EdgeComparator
             {
                 bool operator()(const shared_ptr<Edge>& _lhs, const shared_ptr<Edge>& _rhs) const {
@@ -135,13 +160,21 @@ namespace gdwg {
                         std::exit(1);
                     }
                     // debug --------------------------------------
-                    shared_ptr<Node> lhs = _lhs.dest_.lock();
-                    shared_ptr<Node> rhs = _rhs.dest_.lock();
+                    shared_ptr<Node> lhs_src = _lhs.src_.lock();
+                    shared_ptr<Node> rhs_src = _rhs.src_.lock();
+
+                    shared_ptr<N> lhs_src_name = lhs_src.name_.lock();
+                    shared_ptr<N> rhs_src_name = rhs_src.name_.lock();
+
+                    shared_ptr<Node> lhs_dest = _lhs.dest_.lock();
+                    shared_ptr<Node> rhs_dest = _rhs.dest_.lock();
                     
-                    shared_ptr<N> lhs_name = lhs.name_.lock();
-                    shared_ptr<N> rhs_name = rhs.name_.lock();
-                    return ( *lhs_name < *rhs_name ) ||
-                            ( ( *lhs_name == *rhs_name ) && ( _lhs.weight_ < _rhs.weight_ ) )
+                    shared_ptr<N> lhs_dest_name = lhs_dest.name_.lock();
+                    shared_ptr<N> rhs_dest_name = rhs_dest.name_.lock();
+
+                    return ( *lhs_src_name < *lhs_src_name ) ||
+                            ( ( *lhs_src_name == *lhs_src_name ) && ( lhs_dest_name < rhs_dest_name ) ) ||
+                            ( ( *lhs_src_name == *lhs_src_name ) && ( lhs_dest_name == rhs_dest_name ) && ( _lhs.weight < _rhs.weight ) )
                     ;
                 }
             };
@@ -167,12 +200,40 @@ namespace gdwg {
                 std::weak_ptr<Node> dest_;
                 E weight_;
             }Edge;
-            
+
+            /**
+             * assume node exists
+             * 
+             * you can not declare it as public, since struct Node is encapsulated
+             * diff wtih getNodes()
+             */
+            shared_ptr<Node> getNode( const N& val )
+            {
+                shared_ptr<N> temp_N_ptr = make_shared<N>( val );
+                shared_ptr<Node> temp_Node_ptr = this->node_.find(temp_N_ptr)->second;
+                return temp_Node_ptr;
+            }
+
+            // shared_ptr<Node> makeNode( const N& val )
+            // {
+            //     shared_ptr<N> temp_N_ptr = make_shared<N>( val );
+            //     shared_ptr<Node> new_Node = make_shared<Node>( temp_N_ptr );
+            //     return new_Node;
+            // }
+
+            shared_ptr<Edge> makeEdge( const N& src, const N& dest, const E& w ) 
+            {
+                shared_ptr<Node> temp_src = getNode(src);
+                shared_ptr<Node> temp_dest = getNode(dest);
+
+                shared_ptr<Edge> temp_edge = make_shared<Edge>( temp_src, temp_dest, w );
+                return temp_edge;
+            }
             /**
              * one possible bug, key is shared_ptr<N>
              */
             std::map< shared_ptr<N>, shared_ptr<Node>, MapNodeComparator > nodes_;
-            // std::map< int, weak_ptr<Edge> > edges;
+            std::set< weak_ptr<Edge>, EdgeComparator > edges;
 
     };
 
