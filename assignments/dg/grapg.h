@@ -26,7 +26,7 @@ namespace gdwg {
     class Graph {
         public:
             Graph() = default;
-
+            // change ------------------------------- let clion thinks this one is good
             Graph( std::vector<N>::const_iterator start, std::vector<N>::const_iterator end ) 
             {
                 for( auto it = start; it != end ; it++ ) {
@@ -37,21 +37,24 @@ namespace gdwg {
                     this->nodes.emplace( name, node );
                 }
             }
-
+            // change ------------------------------- let clion thinks this one is good
             Graph(std::vector<std::tuple<N, N, E>>::const_iterator start, std::vector<std::tuple<N, N, E>>::const_iterator end)
             {
                 for( auto it = start ; it != end ; it++ ) {
                     
                 }
             }
-            class const_iterator {};
+
+            class const_iterator {
+                // const_iterator find(const N&, const N&, const E&);
+            };
 
             bool InsertNode(const N& val)
             {
-                shared_ptr<N> temp_N_ptr = make_shared<N>( val );
-                if( this->nodes_.find(temp_N_ptr) != this->nodes_.end() ) {
+                if( IsNode( val ) == true ) {
                     return false;
                 }
+                shared_ptr<N> temp_N_ptr = make_shared<N>( val );
                 shared_ptr<Node> temp_Node_ptr = make_shared<Node>( temp_N_ptr );
                 /**
                  * possible bud, check how emplace() works, for name_ptr, should just exist one which is in map
@@ -60,14 +63,50 @@ namespace gdwg {
                 return true;
             }
             
-            bool InsertEdge(const N& src, const N& dst, const E& w)
+            bool InsertEdge(const N& src, const N& dest, const E& w)
             {
-                shared_ptr<N> temp_src_node = make_shared<N>( src );
-                shared_ptr<N> temp_dest_node = make_shared<N>( dst );
-                if( this->nodes_.find(temp_src_node) != this->nodes_.end() || this->nodes_.find(temp_dest_node) != this->nodes_.end() ) {
+                // check if either one node does not exist
+                if(  IsNode( src ) == true ||  IsNode( dest ) == true ) {
                     return false;
                 }
+                shared_ptr<N> temp_N_src_ptr = make_shared<N>( src );
+                shared_ptr<N> temp_N_dst_ptr = make_shared<N>( dst );
+                /**
+                 * 
+                 */
+                // check if this edge exists;                                   second is outcoming
+                shared_ptr<Node> temp_src_node = this->nodes_.find( temp_N_src_ptr )->second;
+                // check set "outcoming"
+                for( auto& it : temp_src_node.outcoming ) {
+                    shared_ptr<Node> edge_dest = it.dest_.lock();
+                    // after find Node "dest", need to access its name(N)
+                    shared_ptr<Node> edge_dest_name = edge_dest.name_.lock();
+                    if( *edge_dest_name == dest && it.weight_ == w ) {
+                        // found a same edge
+                        return false;
+                    }
+                }
                 
+                // if it is new edge, insert
+                /**
+                 * need to add two sets, one is node(src).outcoming, second is node(dest).incoming
+                 * In order to achieve goal "one resource per edge", only one make_shared,
+                 *                                                   but two pointer <---------------
+                 */ 
+                
+                // still use the variable "temp_src_node"
+                shared_ptr<>
+                temp_src_node.outcoming.
+
+            }
+
+            bool IsNode(const N& val)
+            {
+                shared_ptr<N> temp_N_ptr = make_shared<N>( val );
+                if( this->nodes_.find(temp_N_ptr) != this->nodes_.end() ) {
+                    return false;
+                }
+                return true;
             }
         private:            
             struct Edge;
@@ -91,18 +130,18 @@ namespace gdwg {
             {
                 bool operator()(const shared_ptr<Edge>& _lhs, const shared_ptr<Edge>& _rhs) const {
                     // debug --------------------------------------
-                    if( _lhs.dest.expired() == true || _rhs.dest.expired() == true ) {
+                    if( _lhs.dest_.expired() == true || _rhs.dest_.expired() == true ) {
                         std::cout << "expire impossible\n";
                         std::exit(1);
                     }
                     // debug --------------------------------------
-                    shared_ptr<Node> lhs = _lhs.dest.lock();
-                    shared_ptr<Node> rhs = _rhs.dest.lock();
+                    shared_ptr<Node> lhs = _lhs.dest_.lock();
+                    shared_ptr<Node> rhs = _rhs.dest_.lock();
                     
                     shared_ptr<N> lhs_name = lhs.name_.lock();
                     shared_ptr<N> rhs_name = rhs.name_.lock();
-                    return ( lhs_name < rhs_name ) ||
-                            ( ( lhs_name == rhs_name ) && ( _lhs.weight_ < _rhs.weight_ ) )
+                    return ( *lhs_name < *rhs_name ) ||
+                            ( ( *lhs_name == *rhs_name ) && ( _lhs.weight_ < _rhs.weight_ ) )
                     ;
                 }
             };
@@ -123,8 +162,9 @@ namespace gdwg {
 
             typedef struct Edge
             {
-                std::weak_ptr<Node> src;
-                std::weak_ptr<Node> dest;
+                Edge( shared_ptr<Node> src, shared_ptr<Node> dest, E weight ) : src_{src}, dest_{dest}, weight_{weight} {}
+                std::weak_ptr<Node> src_;
+                std::weak_ptr<Node> dest_;
                 E weight_;
             }Edge;
             
