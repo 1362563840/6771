@@ -251,7 +251,7 @@ namespace gdwg {
             {
                 bool operator()(const shared_ptr<Edge>& _lhs, const shared_ptr<Edge>& _rhs) const {
                     // debug --------------------------------------
-                    if( _lhs.dest_.expired() == true || _rhs.dest_.expired() == true  {
+                    if( _lhs.dest_.expired() == true || _rhs.dest_.expired() == true ){
                         std::cout << "expire impossible\n";
                         std::exit(1);
                     }
