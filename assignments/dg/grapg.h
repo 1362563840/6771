@@ -69,7 +69,7 @@ namespace gdwg {
             bool InsertEdge(const N& src, const N& dest, const E& w)
             {
                 // check if either one node does not exist
-                if(  IsNode( src ) == true ||  IsNode( dest ) == true ) {
+                if(  IsNode( src ) == false ||  IsNode( dest ) == false ) {
                     stringstream ss;
                     ss << "Cannot call Graph::InsertEdge when either src or dst node does not exist";
                     throw std::runtime_error(ss.str());
@@ -121,6 +121,7 @@ namespace gdwg {
                 (*temp_src_node).outcoming.insert(temp_edge);
                 (*temp_dest_node).incoming.insert(temp_edge);
 
+                this->edges_.insert(temp_edge);
                 
                 //------------------------------------------------------- Second way
 
@@ -270,7 +271,7 @@ namespace gdwg {
 
                     return ( *lhs_src_name < *lhs_src_name ) ||
                             ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name < *rhs_dest_name ) ) ||
-                            ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name == *rhs_dest_name ) && ( (*_lhs).weight < (*_rhs).weight ) )
+                            ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name == *rhs_dest_name ) && ( (*_lhs).weight_ < (*_rhs).weight_ ) )
                     ;
                 }
             };
@@ -302,7 +303,7 @@ namespace gdwg {
 
                     return ( *lhs_src_name < *lhs_src_name ) ||
                             ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name < *rhs_dest_name ) ) ||
-                            ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name == *rhs_dest_name ) && ( (*_lhs).weight < (*_rhs).weight ) )
+                            ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name == *rhs_dest_name ) && ( (*_lhs).weight_ < (*_rhs).weight_ ) )
                     ;
                 }
             };
@@ -338,7 +339,7 @@ namespace gdwg {
             shared_ptr<Node> getNode( const N& val )
             {
                 shared_ptr<N> temp_N_ptr = make_shared<N>( val );
-                shared_ptr<Node> temp_Node_ptr = this->node_.find(temp_N_ptr)->second;
+                shared_ptr<Node> temp_Node_ptr = this->nodes_.find(temp_N_ptr)->second;
                 return temp_Node_ptr;
             }
 
