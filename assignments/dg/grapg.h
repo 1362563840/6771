@@ -2,10 +2,12 @@
 #define ASSIGNMENTS_DG_GRAPH_H_
 
 #include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -15,6 +17,7 @@ using std::map;
 using std::set;
 using std::shared_ptr;
 using std::make_shared;
+using std::stringstream;
 using std::string;
 using std::unordered_set;
 using std::vector;
@@ -67,7 +70,9 @@ namespace gdwg {
             {
                 // check if either one node does not exist
                 if(  IsNode( src ) == true ||  IsNode( dest ) == true ) {
-                    return false;
+                    stringstream ss;
+                    ss << "Cannot call Graph::InsertEdge when either src or dst node does not exist";
+                    throw std::runtime_error(ss.str());
                 }
                 /**
                  * There are two ways to check if such edge exists
@@ -122,13 +127,49 @@ namespace gdwg {
                 return true;
             }
 
+            /**
+             * Question, if node does not exist, return true or false?
+             */
+            bool DeleteNode(const N& val)
+            {
+                if( IsNode( val ) == false ) {
+                    return false;
+                }
+                shared_ptr<N> temp_N_ptr = make_shared<N>( val );
+                shared_ptr<Node> temp_Node_ptr = this->nodes_.find( temp_N_ptr )->second;
+                // go through outcoming, delete each edge
+                // use reference
+                /**
+                 * Question :
+                 * if use reference here, temp_Node_ptr.outcoming.erase(self) will cause error or not???
+                 */
+                for( auto it : temp_Node_ptr.outcoming ) {
+                    // access dest node, then delete this edge in tis incoming
+                    std::shared_ptr<Node> temp_dest = it.dest_.lock();
+                    temp_dest.incoming.erase(it);
+
+                    temp_Node_ptr.outcoming.erase(it);
+                    this->edges.erase(it);
+                }
+                // same thing for incoming, but no need to delete in variable ""
+                for( auto it : temp_Node_ptr.incoming ) {
+                    std::shared_ptr<Node> temp_src = it.src_.lock();
+                    temp_src.outcoming.erase(it);
+
+                    temp_Node_ptr.incoming.erase(it);
+                }
+                // last, delete node it self
+                this->nodes_.erase(temp_N_ptr);
+                return true;
+            }
+
             bool IsNode(const N& val)
             {
                 shared_ptr<N> temp_N_ptr = make_shared<N>( val );
                 if( this->nodes_.find(temp_N_ptr) != this->nodes_.end() ) {
-                    return false;
+                    return true;
                 }
-                return true;
+                return false;
             }
 
 
@@ -151,9 +192,41 @@ namespace gdwg {
             //     }
             // };
 
-            struct EdgeComparator
+            struct EdgeComparator_shared
             {
                 bool operator()(const shared_ptr<Edge>& _lhs, const shared_ptr<Edge>& _rhs) const {
+                    // debug --------------------------------------
+                    if( _lhs.dest_.expired() == true || _rhs.dest_.expired() == true ) {
+                        std::cout << "expire impossible\n";
+                        std::exit(1);
+                    }
+                    // debug --------------------------------------
+                    shared_ptr<Node> lhs_src = _lhs.src_.lock();
+                    shared_ptr<Node> rhs_src = _rhs.src_.lock();
+
+                    shared_ptr<N> lhs_src_name = lhs_src.name_.lock();
+                    shared_ptr<N> rhs_src_name = rhs_src.name_.lock();
+
+                    shared_ptr<Node> lhs_dest = _lhs.dest_.lock();
+                    shared_ptr<Node> rhs_dest = _rhs.dest_.lock();
+                    
+                    shared_ptr<N> lhs_dest_name = lhs_dest.name_.lock();
+                    shared_ptr<N> rhs_dest_name = rhs_dest.name_.lock();
+
+                    return ( *lhs_src_name < *lhs_src_name ) ||
+                            ( ( *lhs_src_name == *lhs_src_name ) && ( lhs_dest_name < rhs_dest_name ) ) ||
+                            ( ( *lhs_src_name == *lhs_src_name ) && ( lhs_dest_name == rhs_dest_name ) && ( _lhs.weight < _rhs.weight ) )
+                    ;
+                }
+            };
+            /**
+             * Be careful, parameter starts with two underlying
+             */
+            struct EdgeComparator_weak
+            {
+                bool operator()(const weak_ptr<Edge>& __lhs, const weak_ptr<Edge>& __rhs) const {
+                    shared_ptr<Edge> _lhs = __lhs.lock();
+                    shared_ptr<Edge> _rhs = __rhs.lock();
                     // debug --------------------------------------
                     if( _lhs.dest_.expired() == true || _rhs.dest_.expired() == true ) {
                         std::cout << "expire impossible\n";
@@ -189,8 +262,8 @@ namespace gdwg {
                 //                                         );
                 //                                             }
                 // > outcoming;
-                std::set< std::shared_ptr<Edge>, EdgeComparator > outcoming;
-                std::set< std::shared_ptr<Edge>, EdgeComparator > incoming;
+                std::set< std::shared_ptr<Edge>, EdgeComparator_shared > outcoming;
+                std::set< std::shared_ptr<Edge>, EdgeComparator_shared > incoming;
             }Node;
 
             typedef struct Edge
@@ -233,7 +306,7 @@ namespace gdwg {
              * one possible bug, key is shared_ptr<N>
              */
             std::map< shared_ptr<N>, shared_ptr<Node>, MapNodeComparator > nodes_;
-            std::set< weak_ptr<Edge>, EdgeComparator > edges;
+            std::set< weak_ptr<Edge>, EdgeComparator_weak > edges;
 
     };
 
