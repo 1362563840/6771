@@ -37,7 +37,7 @@ namespace gdwg {
                     // possible bug ---------------------------
                     // make_shared should just call Node constructor
                     shared_ptr<Node> node = make_shared<Node>( name );
-                    this->nodes.emplace( name, node );
+                    this->nodes_.emplace( name, node );
                 }
             }
             // change ------------------------------- let clion thinks this one is good
@@ -118,8 +118,8 @@ namespace gdwg {
                 shared_ptr<Node> temp_src_node = getNode( src );
                 shared_ptr<Node> temp_dest_node = getNode( dest );
 
-                temp_src_node.outcoming.insert(temp_edge);
-                temp_dest_node.incoming.insert(temp_edge);
+                (*temp_src_node).outcoming.insert(temp_edge);
+                (*temp_dest_node).incoming.insert(temp_edge);
 
                 
                 //------------------------------------------------------- Second way
@@ -143,20 +143,20 @@ namespace gdwg {
                  * Question :
                  * if use reference here, temp_Node_ptr.outcoming.erase(self) will cause error or not???
                  */
-                for( auto it : temp_Node_ptr.outcoming ) {
+                for( auto it : (*temp_Node_ptr).outcoming ) {
                     // access dest node, then delete this edge in tis incoming
-                    std::shared_ptr<Node> temp_dest = it.dest_.lock();
-                    temp_dest.incoming.erase(it);
+                    std::shared_ptr<Node> temp_dest = (*it).dest_.lock();
+                    (*temp_dest).incoming.erase(it);
 
-                    temp_Node_ptr.outcoming.erase(it);
+                    (*temp_Node_ptr).outcoming.erase(it);
                     this->edges_.erase(it);
                 }
                 // same thing for incoming, but no need to delete in variable ""
-                for( auto it : temp_Node_ptr.incoming ) {
-                    std::shared_ptr<Node> temp_src = it.src_.lock();
-                    temp_src.outcoming.erase(it);
+                for( auto it : (*temp_Node_ptr).incoming ) {
+                    std::shared_ptr<Node> temp_src = (*it).src_.lock();
+                    (*temp_src).outcoming.erase(it);
 
-                    temp_Node_ptr.incoming.erase(it);
+                    (*temp_Node_ptr).incoming.erase(it);
                 }
                 // last, delete node it self
                 this->nodes_.erase(temp_N_ptr);
@@ -175,7 +175,7 @@ namespace gdwg {
                 }
                 shared_ptr<N> temp_N_ptr = make_shared<N>( newData );
                 auto temp_node_handler = this->nodes_.extract(temp_N_ptr);
-                shared_ptr<N> temp_value_name = temp_node_handler.value().name_.lock();
+                shared_ptr<N> temp_value_name = ( *(temp_node_handler.value()) ).name_.lock();
                 *temp_value_name = newData;
                 shared_ptr<N> temp_key_name = temp_node_handler.key();
                 *temp_key_name = newData;
@@ -201,15 +201,15 @@ namespace gdwg {
                 // go through variable "edges_" since it is already sorted 
                 for( auto& edge : graph.edges_ ) {
                     shared_ptr<Edge> temp_edge = edge.lock();
-                    shared_ptr<Node> temp_src_node = temp_edge.src_.lock();
-                    shared_ptr<N> temp_src_node_name = temp_src_node.name_.lock();
+                    shared_ptr<Node> temp_src_node = (*temp_edge).src_.lock();
+                    shared_ptr<N> temp_src_node_name = (*temp_src_node).name_.lock();
 
-                    shared_ptr<Node> temp_dest_node = temp_edge.dest_.lock();
-                    shared_ptr<N> temp_dest_node_name = temp_dest_node.name_.lock();
+                    shared_ptr<Node> temp_dest_node = (*temp_edge).dest_.lock();
+                    shared_ptr<N> temp_dest_node_name = (*temp_dest_node).name_.lock();
 
                     if( first == 0 ) {
                         out << *temp_src_node_name << " (" << "\n";
-                        out << "  " << *temp_dest_node_name << " | " << temp_edge.weight_ << "\n";
+                        out << "  " << *temp_dest_node_name << " | " << (*temp_edge).weight_ << "\n";
                         last = *temp_src_node_name;
                         first++;
                     }else {
@@ -217,10 +217,10 @@ namespace gdwg {
                         if( last != *temp_src_node_name ) {
                             out << ")" << "\n";
                             out << *temp_src_node_name << " (" << "\n";
-                            out << "  " << *temp_dest_node_name << " | " << temp_edge.weight_ << "\n";
+                            out << "  " << *temp_dest_node_name << " | " << (*temp_edge).weight_ << "\n";
                             last = *temp_src_node_name;
                         }else {
-                            out << "  " << *temp_dest_node_name << " | " << temp_edge.weight_ << "\n";
+                            out << "  " << *temp_dest_node_name << " | " << (*temp_edge).weight_ << "\n";
                         }
                     }
                 }
@@ -251,26 +251,26 @@ namespace gdwg {
             {
                 bool operator()(const shared_ptr<Edge>& _lhs, const shared_ptr<Edge>& _rhs) const {
                     // debug --------------------------------------
-                    if( _lhs.dest_.expired() == true || _rhs.dest_.expired() == true ){
+                    if( (*_lhs).dest_.expired() == true || (*_rhs).dest_.expired() == true ){
                         std::cout << "expire impossible\n";
                         std::exit(1);
                     }
                     // debug --------------------------------------
-                    shared_ptr<Node> lhs_src = _lhs.src_.lock();
-                    shared_ptr<Node> rhs_src = _rhs.src_.lock();
+                    shared_ptr<Node> lhs_src = (*_lhs).src_.lock();
+                    shared_ptr<Node> rhs_src = (*_rhs).src_.lock();
 
-                    shared_ptr<N> lhs_src_name = lhs_src.name_.lock();
-                    shared_ptr<N> rhs_src_name = rhs_src.name_.lock();
+                    shared_ptr<N> lhs_src_name = (*lhs_src).name_.lock();
+                    shared_ptr<N> rhs_src_name = (*rhs_src).name_.lock();
 
-                    shared_ptr<Node> lhs_dest = _lhs.dest_.lock();
-                    shared_ptr<Node> rhs_dest = _rhs.dest_.lock();
+                    shared_ptr<Node> lhs_dest = (*_lhs).dest_.lock();
+                    shared_ptr<Node> rhs_dest = (*_rhs).dest_.lock();
                     
-                    shared_ptr<N> lhs_dest_name = lhs_dest.name_.lock();
-                    shared_ptr<N> rhs_dest_name = rhs_dest.name_.lock();
+                    shared_ptr<N> lhs_dest_name = (*lhs_dest).name_.lock();
+                    shared_ptr<N> rhs_dest_name = (*rhs_dest).name_.lock();
 
                     return ( *lhs_src_name < *lhs_src_name ) ||
-                            ( ( *lhs_src_name == *lhs_src_name ) && ( lhs_dest_name < rhs_dest_name ) ) ||
-                            ( ( *lhs_src_name == *lhs_src_name ) && ( lhs_dest_name == rhs_dest_name ) && ( _lhs.weight < _rhs.weight ) )
+                            ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name < *rhs_dest_name ) ) ||
+                            ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name == *rhs_dest_name ) && ( (*_lhs).weight < (*_rhs).weight ) )
                     ;
                 }
             };
@@ -283,26 +283,26 @@ namespace gdwg {
                     shared_ptr<Edge> _lhs = __lhs.lock();
                     shared_ptr<Edge> _rhs = __rhs.lock();
                     // debug --------------------------------------
-                    if( _lhs.dest_.expired() == true || _rhs.dest_.expired() == true ) {
+                    if( (*_lhs).dest_.expired() == true || (*_rhs).dest_.expired() == true ) {
                         std::cout << "expire impossible\n";
                         std::exit(1);
                     }
                     // debug --------------------------------------
-                    shared_ptr<Node> lhs_src = _lhs.src_.lock();
-                    shared_ptr<Node> rhs_src = _rhs.src_.lock();
+                    shared_ptr<Node> lhs_src = (*_lhs).src_.lock();
+                    shared_ptr<Node> rhs_src = (*_rhs).src_.lock();
 
-                    shared_ptr<N> lhs_src_name = lhs_src.name_.lock();
-                    shared_ptr<N> rhs_src_name = rhs_src.name_.lock();
+                    shared_ptr<N> lhs_src_name = (*lhs_src).name_.lock();
+                    shared_ptr<N> rhs_src_name = (*rhs_src).name_.lock();
 
-                    shared_ptr<Node> lhs_dest = _lhs.dest_.lock();
-                    shared_ptr<Node> rhs_dest = _rhs.dest_.lock();
+                    shared_ptr<Node> lhs_dest = (*_lhs).dest_.lock();
+                    shared_ptr<Node> rhs_dest = (*_rhs).dest_.lock();
                     
-                    shared_ptr<N> lhs_dest_name = lhs_dest.name_.lock();
-                    shared_ptr<N> rhs_dest_name = rhs_dest.name_.lock();
+                    shared_ptr<N> lhs_dest_name = (*lhs_dest).name_.lock();
+                    shared_ptr<N> rhs_dest_name = (*rhs_dest).name_.lock();
 
                     return ( *lhs_src_name < *lhs_src_name ) ||
-                            ( ( *lhs_src_name == *lhs_src_name ) && ( lhs_dest_name < rhs_dest_name ) ) ||
-                            ( ( *lhs_src_name == *lhs_src_name ) && ( lhs_dest_name == rhs_dest_name ) && ( _lhs.weight < _rhs.weight ) )
+                            ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name < *rhs_dest_name ) ) ||
+                            ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name == *rhs_dest_name ) && ( (*_lhs).weight < (*_rhs).weight ) )
                     ;
                 }
             };
