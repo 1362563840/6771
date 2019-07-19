@@ -76,7 +76,7 @@ namespace gdwg {
                 }
                 /**
                  * There are two ways to check if such edge exists
-                 * one is direct way, using variables set "edges"
+                 * one is direct way, using variables set "edges_"
                  * second way is to find src node, then use src node to find outcoming edges, then check if 
                  * such one is satisfied
                  */
@@ -112,7 +112,7 @@ namespace gdwg {
 
                 shared_ptr<Edge> temp_edge = makeEdge( src, dest, w );
 
-                if( this->edges.find(temp_edge) != this->edges.end() ) {
+                if( this->edges_.find(temp_edge) != this->edges_.end() ) {
                     return false;
                 }
                 shared_ptr<Node> temp_src_node = getNode( src );
@@ -149,7 +149,7 @@ namespace gdwg {
                     temp_dest.incoming.erase(it);
 
                     temp_Node_ptr.outcoming.erase(it);
-                    this->edges.erase(it);
+                    this->edges_.erase(it);
                 }
                 // same thing for incoming, but no need to delete in variable ""
                 for( auto it : temp_Node_ptr.incoming ) {
@@ -163,6 +163,27 @@ namespace gdwg {
                 return true;
             }
 
+            bool Replace(const N& oldData, const N& newData)
+            {
+                if( IsNode( oldData ) == false ) {
+                    stringstream ss;
+                    ss << "Cannot call Graph::Replace on a node that doesn't exist";
+                    throw std::runtime_error(ss.str());
+                }
+                if( IsNode( newData ) == true ) {
+                    return false;
+                }
+                shared_ptr<N> temp_N_ptr = make_shared<N>( newData );
+                auto temp_node_handler = this->nodes_.extract(temp_N_ptr);
+                shared_ptr<N> temp_value_name = temp_node_handler.value().name_.lock();
+                *temp_value_name = newData;
+                shared_ptr<N> temp_key_name = temp_node_handler.key();
+                *temp_key_name = newData;
+                
+                this->nodes_.insert( std::move(temp_node_handler) );
+                return true;
+            }
+
             bool IsNode(const N& val)
             {
                 shared_ptr<N> temp_N_ptr = make_shared<N>( val );
@@ -171,7 +192,41 @@ namespace gdwg {
                 }
                 return false;
             }
+            
+            friend std::ostream& operator<<(std::ostream& out, const gdwg::Graph<N, E>& graph)
+            {
+                // can not initialize this one, since the initial value may be same with node.name_
+                N last;
+                int first = 0;
+                // go through variable "edges_" since it is already sorted 
+                for( auto& edge : graph.edges_ ) {
+                    shared_ptr<Edge> temp_edge = edge.lock();
+                    shared_ptr<Node> temp_src_node = temp_edge.src_.lock();
+                    shared_ptr<N> temp_src_node_name = temp_src_node.name_.lock();
 
+                    shared_ptr<Node> temp_dest_node = temp_edge.dest_.lock();
+                    shared_ptr<N> temp_dest_node_name = temp_dest_node.name_.lock();
+
+                    if( first == 0 ) {
+                        out << *temp_src_node_name << " (" << "\n";
+                        out << "  " << *temp_dest_node_name << " | " << temp_edge.weight_ << "\n";
+                        last = *temp_src_node_name;
+                        first++;
+                    }else {
+                        // new src node
+                        if( last != *temp_src_node_name ) {
+                            out << ")" << "\n";
+                            out << *temp_src_node_name << " (" << "\n";
+                            out << "  " << *temp_dest_node_name << " | " << temp_edge.weight_ << "\n";
+                            last = *temp_src_node_name;
+                        }else {
+                            out << "  " << *temp_dest_node_name << " | " << temp_edge.weight_ << "\n";
+                        }
+                    }
+                }
+                out << "\n";
+                return out;
+            }
 
         private:            
             struct Edge;
@@ -306,7 +361,7 @@ namespace gdwg {
              * one possible bug, key is shared_ptr<N>
              */
             std::map< shared_ptr<N>, shared_ptr<Node>, MapNodeComparator > nodes_;
-            std::set< weak_ptr<Edge>, EdgeComparator_weak > edges;
+            std::set< weak_ptr<Edge>, EdgeComparator_weak > edges_;
 
     };
 
