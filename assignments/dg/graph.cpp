@@ -30,3 +30,9 @@ typedef gdwg::Graph::Node
     std::set< std::shared_ptr<Edge>, EdgeComparator > outcoming;
     std::set< std::shared_ptr<Edge>, EdgeComparator > incoming;
 }Node
+
+template<typename N, typename E>
+Graph( std::vector<N>::const_iterator start, std::vector<N>::const_iterator end )
+{
+    
+}

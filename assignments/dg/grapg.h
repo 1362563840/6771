@@ -30,7 +30,7 @@ namespace gdwg {
         public:
             Graph() = default;
             // change ------------------------------- let clion thinks this one is good
-            Graph( std::vector<N>::const_iterator start, std::vector<N>::const_iterator end ) 
+            Graph( typename std::vector<N>::const_iterator start, typename std::vector<N>::const_iterator end ) 
             {
                 for( auto it = start; it != end ; it++ ) {
                     shared_ptr<N> name = make_shared<N>(*it);
@@ -41,7 +41,7 @@ namespace gdwg {
                 }
             }
             // change ------------------------------- let clion thinks this one is good
-            Graph(std::vector<std::tuple<N, N, E>>::const_iterator start, std::vector<std::tuple<N, N, E>>::const_iterator end)
+            Graph( typename  std::vector<std::tuple<N, N, E>>::const_iterator start, typename std::vector<std::tuple<N, N, E>>::const_iterator end)
             {
                 for( auto it = start ; it != end ; it++ ) {
                     
@@ -251,7 +251,7 @@ namespace gdwg {
             {
                 bool operator()(const shared_ptr<Edge>& _lhs, const shared_ptr<Edge>& _rhs) const {
                     // debug --------------------------------------
-                    if( _lhs.dest_.expired() == true || _rhs.dest_.expired() == true ) {
+                    if( _lhs.dest_.expired() == true || _rhs.dest_.expired() == true  {
                         std::cout << "expire impossible\n";
                         std::exit(1);
                     }
