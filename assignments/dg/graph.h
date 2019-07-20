@@ -9,6 +9,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <unordered_set>
 #include <vector>
 
@@ -29,29 +30,61 @@ namespace gdwg {
     class Graph {
         public:
             Graph() = default;
-            // change ------------------------------- let clion thinks this one is good
-            Graph( typename std::vector<N>::const_iterator start, typename std::vector<N>::const_iterator end ) 
+
+            /**
+             * Question, do we assume it is valid node, or possible duplicated node
+             */
+            Graph( typename std::vector<N>::const_iterator _start, typename std::vector<N>::const_iterator _end ) 
             {
-                for( auto it = start; it != end ; it++ ) {
-                    shared_ptr<N> name = make_shared<N>(*it);
-                    // possible bug ---------------------------
-                    // make_shared should just call Node constructor
-                    shared_ptr<Node> node = make_shared<Node>( name );
-                    this->nodes_.emplace( name, node );
+                for( auto it = _start; it != _end ; it++ ) {
+                    // Because InsertNode() already check if such node exists or not
+                    InsertNode( *it );
                 }
             }
-            // change ------------------------------- let clion thinks this one is good
-            Graph( typename  std::vector<std::tuple<N, N, E>>::const_iterator start, typename std::vector<std::tuple<N, N, E>>::const_iterator end)
+
+            /**
+             * if node does not exist, create
+             * 
+             * Question : Assume, edges are valid, but it should not matter, if smae edge, the set should remove duplicate based
+             * on the custom comparator
+             */
+            Graph( typename  std::vector<std::tuple<N, N, E>>::const_iterator _start, typename std::vector<std::tuple<N, N, E>>::const_iterator _end)
             {
-                for( auto it = start ; it != end ; it++ ) {
-                    
+                for( auto it = _start ; it != _end ; it++ ) {
+                    // Because InsertNode() already check if such node exists or not
+                    N temp_src_name = std::get<0>(*it);
+                    InsertNode( temp_src_name );
+
+                    N temp_dest_name = std::get<1>(*it);
+                    InsertNode( temp_dest_name );
+
+                    InsertEdge( temp_src_name, temp_dest_name, std::get<2>(*it) );
                 }
+            }
+
+            /**
+             * 
+             */
+            Graph( typename std::initializer_list<N> _list ) 
+            {
+                for( auto it : _list ) {
+                    // Because InsertNode() already check if such node exists or not
+                    InsertNode( it );
+                }
+            }
+
+            Graph( typename const gdwg::Graph<N, E>& _graph )
+            {
+
             }
 
             class const_iterator {
                 // const_iterator find(const N&, const N&, const E&);
             };
 
+            /**
+             * Question, Do we need to check if it is node
+             */
             bool InsertNode(const N& val)
             {
                 if( IsNode( val ) == true ) {
@@ -62,7 +95,7 @@ namespace gdwg {
                 /**
                  * possible bud, check how emplace() works, for name_ptr, should just exist one which is in map
                  */
-                this->nodes.emplace( temp_N_ptr, temp_Node_ptr );
+                this->nodes_.emplace( temp_N_ptr, temp_Node_ptr );
                 return true;
             }
             
@@ -153,7 +186,7 @@ namespace gdwg {
                     this->edges_.erase(it);
                 }
                 // same thing for incoming, but no need to delete in variable ""
-                for( auto it : (*temp_Node_ptr).incoming ) {
+                for( auto& it : (*temp_Node_ptr).incoming ) {
                     std::shared_ptr<Node> temp_src = (*it).src_.lock();
                     (*temp_src).outcoming.erase(it);
 
@@ -195,7 +228,10 @@ namespace gdwg {
             }
             
             friend std::ostream& operator<<(std::ostream& out, const gdwg::Graph<N, E>& graph)
-            {
+            {   
+
+                // --------------------------------------------------
+
                 // can not initialize this one, since the initial value may be same with node.name_
                 N last;
                 int first = 0;
@@ -269,9 +305,9 @@ namespace gdwg {
                     shared_ptr<N> lhs_dest_name = (*lhs_dest).name_.lock();
                     shared_ptr<N> rhs_dest_name = (*rhs_dest).name_.lock();
 
-                    return ( *lhs_src_name < *lhs_src_name ) ||
-                            ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name < *rhs_dest_name ) ) ||
-                            ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name == *rhs_dest_name ) && ( (*_lhs).weight_ < (*_rhs).weight_ ) )
+                    return ( *lhs_src_name < *rhs_src_name ) ||
+                            ( ( *lhs_src_name == *rhs_src_name ) && ( *lhs_dest_name < *rhs_dest_name ) ) ||
+                            ( ( *lhs_src_name == *rhs_src_name ) && ( *lhs_dest_name == *rhs_dest_name ) && ( (*_lhs).weight_ < (*_rhs).weight_ ) )
                     ;
                 }
             };
@@ -301,9 +337,9 @@ namespace gdwg {
                     shared_ptr<N> lhs_dest_name = (*lhs_dest).name_.lock();
                     shared_ptr<N> rhs_dest_name = (*rhs_dest).name_.lock();
 
-                    return ( *lhs_src_name < *lhs_src_name ) ||
-                            ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name < *rhs_dest_name ) ) ||
-                            ( ( *lhs_src_name == *lhs_src_name ) && ( *lhs_dest_name == *rhs_dest_name ) && ( (*_lhs).weight_ < (*_rhs).weight_ ) )
+                    return ( *lhs_src_name < *rhs_src_name ) ||
+                            ( ( *lhs_src_name == *rhs_src_name ) && ( *lhs_dest_name < *rhs_dest_name ) ) ||
+                            ( ( *lhs_src_name == *rhs_src_name ) && ( *lhs_dest_name == *rhs_dest_name ) && ( (*_lhs).weight_ < (*_rhs).weight_ ) )
                     ;
                 }
             };
