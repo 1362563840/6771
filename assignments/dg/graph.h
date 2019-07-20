@@ -77,7 +77,7 @@ namespace gdwg {
              * in order to save time avoind adding duplicate edge to this->edges_(despite that set will automatically remove duplicate)
              * We only add outcoming_ edges to new Graph->edges_
              */
-            Graph( typename const gdwg::Graph<N, E>& _graph )
+            Graph( typename gdwg::Graph<N,E>& _graph )
             {
                 // first, copy all nodes ignoring edges into new graph(this)
                 for( auto& it : _graph.nodes_ ) {
@@ -103,7 +103,11 @@ namespace gdwg {
                     (*temp_dest_node).incoming_.insert(new_edge);
                     this->edges_.insert(new_edge);
                 }
-            } 
+            }
+            
+            Graph( typename gdwg::Graph<N,E>&& _another ) : nodes_{_another.nodes_}, 
+                                    edges_{_another.edges_} {}
+
 
             class const_iterator {
                 // const_iterator find(const N&, const N&, const E&);
@@ -140,33 +144,6 @@ namespace gdwg {
                  * second way is to find src node, then use src node to find outcoming edges, then check if 
                  * such one is satisfied
                  */
-                //------------------------------------------------------- First way
-                // shared_ptr<N> temp_N_src_ptr = getNode( src );
-                // shared_ptr<N> temp_N_dest_ptr = getNode( dest );
-                // // check if this edge exists;                                   second is outcoming
-                // shared_ptr<Node> temp_src_node = this->nodes_.find( temp_N_src_ptr )->second;
-                // // check set "outcoming"
-                // for( auto& it : temp_src_node.outcoming ) {
-                //     shared_ptr<Node> edge_dest = it.dest_.lock();
-                //     // after find Node "dest", need to access its name(N)
-                //     shared_ptr<Node> edge_dest_name = edge_dest.name_.lock();
-                //     if( *edge_dest_name == dest && it.weight_ == w ) {
-                //         // found a same edge
-                //         return false;
-                //     }
-                // }
-                // // if it is new edge, insert
-                // /**
-                //  * need to add two sets, one is node(src).outcoming, second is node(dest).incoming
-                //  * In order to achieve goal "one resource per edge", only one make_shared,
-                //  */
-                
-                // // still use the variable "temp_src_node"
-                // shared_ptr<Node> temp_dest_node = this->nodes_.find( temp_N_dest_ptr )->second;
-                // shared_ptr<Edge> temp_edge = make_shared<Edge>( temp_src_node, temp_dest_node, w );
-                // temp_src_node.outcoming.insert(temp_edge);
-                // temp_dest_node.incoming.insert(temp_edge);
-                //------------------------------------------------------- First way
                 
                 //------------------------------------------------------- Second way
 
@@ -254,39 +231,27 @@ namespace gdwg {
                 return false;
             }
             
+            /**
+             * go through each node and print out info
+             */
             friend std::ostream& operator<<(std::ostream& _out, const gdwg::Graph<N, E>& _graph)
             {   
-
                 // --------------------------------------------------
-
-                // can not initialize this one, since the initial value may be same with node.name_
-                N last;
-                int first = 0;
-                // go through variable "edges_" since it is already sorted 
-                for( auto& edge : _graph.edges_ ) {
-                    shared_ptr<Edge> temp_edge = edge.lock();
-                    shared_ptr<Node> temp_src_node = (*temp_edge).src_.lock();
+                for( auto& it : _graph.nodes_ ) {
+                    shared_ptr<Node> temp_src_node = it.second;
                     shared_ptr<N> temp_src_node_name = (*temp_src_node).name_.lock();
 
-                    shared_ptr<Node> temp_dest_node = (*temp_edge).dest_.lock();
-                    shared_ptr<N> temp_dest_node_name = (*temp_dest_node).name_.lock();
+                    _out << *temp_src_node_name << " (" << "\n";
 
-                    if( first == 0 ) {
-                        _out << *temp_src_node_name << " (" << "\n";
-                        _out << "  " << *temp_dest_node_name << " | " << (*temp_edge).weight_ << "\n";
-                        last = *temp_src_node_name;
-                        first++;
-                    }else {
-                        // new src node
-                        if( last != *temp_src_node_name ) {
-                            _out << ")" << "\n";
-                            _out << *temp_src_node_name << " (" << "\n";
-                            _out << "  " << *temp_dest_node_name << " | " << (*temp_edge).weight_ << "\n";
-                            last = *temp_src_node_name;
-                        }else {
-                           _out << "  " << *temp_dest_node_name << " | " << (*temp_edge).weight_ << "\n";
-                        }
+                    for( auto& each_edge : (*temp_src_node).outcoming_ ) {
+                        shared_ptr<Node> temp_dest_node = (*each_edge).dest_.lock();
+                        shared_ptr<N> temp_dest_node_name = (*temp_dest_node).name_.lock();
+
+                        _out << "  " << *temp_dest_node_name << " | " << (*each_edge).weight_ << "\n";                        
+
                     }
+                    _out << ")" << "\n";
+
                 }
                 _out << "\n";
                 return _out;
@@ -414,7 +379,7 @@ namespace gdwg {
                 shared_ptr<N> temp_N_ptr = make_shared<N>( _val );
                 // debug test ---------------------------- delete
                 if( this->nodes_.find(temp_N_ptr) == this->nodes_.end() ) {
-                    throw std::runtime_error("impossible, src node does not exist")
+                    throw std::runtime_error("impossible, src node does not exist");
                 }
                 // debug test ---------------------------- delete
                 return this->nodes_.find(temp_N_ptr)->second;
@@ -432,7 +397,7 @@ namespace gdwg {
                 shared_ptr<N> temp_node = (*_node).name_.lock();
                 // debug test ---------------------------- delete
                 if( this->nodes_.find( temp_node ) == this->nodes_.end() ) {
-                    throw std::runtime_error("impossible, src node does not exist")
+                    throw std::runtime_error("impossible, src node does not exist");
                 }
                 // debug test ---------------------------- delete
                 return this->nodes_.find( temp_node )->second;
@@ -449,7 +414,7 @@ namespace gdwg {
              * here the reason to pass reference is to save time
              * in function body, the edge is created by make_shared<>
              */
-            shared_ptr<Edge>& makeEdge( const N& _src, const N& _dest, const E& _w ) 
+            shared_ptr<Edge> makeEdge( const N& _src, const N& _dest, const E& _w ) 
             {
                 shared_ptr<Node> temp_src = getNode(_src);
                 shared_ptr<Node> temp_dest = getNode(_dest);
@@ -466,7 +431,7 @@ namespace gdwg {
              * the nodes needed for this function should already exists
              * becuase we are just coping an existing edge, so just pass const refernece to save time
              */
-            shared_ptr<Edge>& copyEdge( const shared_ptr<Edge>0.& _edge )
+            shared_ptr<Edge> copyEdge( const shared_ptr<Edge>& _edge )
             {
                 
                 shared_ptr<Node> existing_src_node = getNodePassedByNode( (*_edge).src_.lock() );

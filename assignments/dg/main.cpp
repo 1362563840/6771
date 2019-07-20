@@ -39,3 +39,11 @@ int main() {
   std::cout << g;
   return 0;
 }
+
+int main() {
+
+  gdwg::Graph<std::string, double> g{"a", "b", "x", "y"};
+  g.InsertEdge("a", "b", 4);
+  std::cout << g;
+  return 0;
+}
