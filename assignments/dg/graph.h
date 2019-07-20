@@ -65,7 +65,7 @@ namespace gdwg {
             /**
              * 
              */
-            Graph( typename std::initializer_list<N> _list ) 
+            Graph( const typename std::initializer_list<N> _list ) 
             {
                 for( auto it : _list ) {
                     // Because InsertNode() already check if such node exists or not
@@ -77,7 +77,7 @@ namespace gdwg {
              * in order to save time avoind adding duplicate edge to this->edges_(despite that set will automatically remove duplicate)
              * We only add outcoming_ edges to new Graph->edges_
              */
-            Graph( typename gdwg::Graph<N,E>& _graph )
+            Graph( const typename gdwg::Graph<N,E>& _graph )
             {
                 // first, copy all nodes ignoring edges into new graph(this)
                 for( auto& it : _graph.nodes_ ) {
@@ -105,10 +105,10 @@ namespace gdwg {
                 }
             }
             
-            Graph( typename gdwg::Graph<N,E>&& _another ) : nodes_{_another.nodes_}, 
+            Graph( const typename gdwg::Graph<N,E>&& _another ) noexcept : nodes_{_another.nodes_}, 
                                     edges_{_another.edges_} {}
 
-
+            ~Graph() = default;
             class const_iterator {
                 // const_iterator find(const N&, const N&, const E&);
             };
