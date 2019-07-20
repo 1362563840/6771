@@ -109,6 +109,29 @@ namespace gdwg {
                                     edges_{_another.edges_} {}
 
             ~Graph() = default;
+
+            Graph& operator=(const typename gdwg::Graph<N, E>& _rhs)
+            {
+                std::cout << "copy assignment\n";
+                if (this == &_rhs) {
+                    return *this;
+                }
+                Graph<N, E> temp{_rhs};
+                this->nodes_ = std::move(temp.nodes_);
+                this->edges_ = std::move(temp.edges_);
+                return *this;
+            }
+
+            Graph<N, E>& operator=(gdwg::Graph<N, E>&& _rhs) noexcept
+            {
+                std::cout << "move assignment\n";
+                this->nodes_ = std::move(_rhs.nodes_);
+                this->edges_ = std::move(_rhs.edges_);
+                _rhs.nodes_.clear();
+                _rhs.edges.clear();
+                return *this;
+            }
+
             class const_iterator {
                 // const_iterator find(const N&, const N&, const E&);
             };
@@ -174,33 +197,53 @@ namespace gdwg {
                     return false;
                 }
                 shared_ptr<N> temp_N_ptr = make_shared<N>( _val );
-                shared_ptr<Node> temp_Node_ptr = this->nodes_.find( temp_N_ptr )->second;
+                shared_ptr<Node> temp_target_node = this->nodes_.find( temp_N_ptr )->second;
                 // go through outcoming, delete each edge
                 // use reference
                 /**
                  * Question :
                  * if use reference here, temp_Node_ptr.outcoming.erase(self) will cause error or not???
                  */
-                for( auto it : (*temp_Node_ptr).outcoming_ ) {
+                for( auto it : (*temp_target_node).outcoming_ ) {
                     // access dest node, then delete this edge in tis incoming
-                    std::shared_ptr<Node> temp_dest = (*it).dest_.lock();
-                    (*temp_dest).incoming_.erase(it);
-
-                    (*temp_Node_ptr).outcoming_.erase(it);
+                    shared_ptr<Node> temp_dest_node = (*it).dest_.lock();
+                    // std::cout << "still have " << (*((*temp_dest_node).incoming_.find(it))).use_count() << std::endl;
+                    (*temp_dest_node).incoming_.erase(it);
+                    // std::cout << "still have " << (*((*temp_target_node).outcoming_.find(it))).use_count() << std::endl;
+                    (*temp_target_node).outcoming_.erase(it);
+                    // debug test -------------------------------- delete
+                    if( (*(this->edges_.find(it))).use_count() != 1 ) {
+                        std::cout << "still have " << (*(this->edges_.find(it))).use_count() << std::endl;
+                        throw std::runtime_error("impossible, delete fail");
+                    }
+                    // debug test -------------------------------- delete
                     this->edges_.erase(it);
                 }
+                std::cout << "-----------" << std::endl;
                 // same thing for incoming_, but no need to delete in variable ""
-                for( auto& it : (*temp_Node_ptr).incoming_ ) {
-                    std::shared_ptr<Node> temp_src = (*it).src_.lock();
-                    (*temp_src).outcoming_.erase(it);
-
-                    (*temp_Node_ptr).incoming_.erase(it);
+                for( auto it : (*temp_target_node).incoming_ ) {
+                    shared_ptr<Node> temp_src_node = (*it).src_.lock();
+                    (*temp_src_node).outcoming_.erase(it);
+                    (*temp_target_node).incoming_.erase(it);
+                    // debug test -------------------------------- delete
+                    // because variable "it" is also shared_ptr
+                    if( (*(this->edges_.find(it))).use_count() != 1 ) {
+                        std::cout << "still have " << (*(this->edges_.find(it))).use_count() << std::endl;
+                        throw std::runtime_error("impossible, delete fail");
+                    }
+                    // debug test -------------------------------- delete
+                    this->edges_.erase(it);
                 }
                 // last, delete node it self
-                this->nodes_.erase(temp_N_ptr);
+                this->nodes_.erase( temp_N_ptr );
                 return true;
             }
 
+            /**
+             * Because if I change the value, I need to resort, but cpp does not provide such resort
+             * so i have to record all edge corresponding this node, and reinsert again, no other way
+             * Question, replace?? just change the node name???
+             */
             bool Replace(const N& _oldData, const N& _newData)
             {
                 if( IsNode( _oldData ) == false ) {
@@ -211,10 +254,13 @@ namespace gdwg {
                 if( IsNode( _newData ) == true ) {
                     return false;
                 }
-                shared_ptr<N> temp_N_ptr = make_shared<N>( _newData );
+                shared_ptr<N> temp_N_ptr = make_shared<N>( _oldData );
+                
+                // shared_ptr<Node> temp_node_ptr = getNode( _oldData );
+                // shared_ptr<N> temp_node_ptr_name = (*temp_node_ptr).name_.lock();
+                // *temp_node_ptr_name = _newData;
+
                 auto temp_node_handler = this->nodes_.extract(temp_N_ptr);
-                shared_ptr<N> temp_value_name = ( *(temp_node_handler.value()) ).name_.lock();
-                *temp_value_name = _newData;
                 shared_ptr<N> temp_key_name = temp_node_handler.key();
                 *temp_key_name = _newData;
                 
@@ -255,6 +301,18 @@ namespace gdwg {
                 }
                 _out << "\n";
                 return _out;
+            }
+            
+            void check() 
+            {
+                for( auto& it : this->nodes_ ) {
+                    std::cout << "N size is " << it.first.use_count() << std::endl;
+                    std::cout << "Node size is " << it.second.use_count() << std::endl;
+                }
+
+                for( auto& it : this->edges_ ) {
+                    std::cout << "edge size is " << it.use_count() << std::endl;
+                }
             }
 
         private:            
