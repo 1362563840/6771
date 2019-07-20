@@ -75,7 +75,7 @@ namespace gdwg {
 
             /**
              * in order to save time avoind adding duplicate edge to this->edges_(despite that set will automatically remove duplicate)
-             * We only add outcoming edges to new Graph->edges_
+             * We only add outcoming_ edges to new Graph->edges_
              */
             Graph( typename const gdwg::Graph<N, E>& _graph )
             {
@@ -83,7 +83,7 @@ namespace gdwg {
                 for( auto& it : _graph.nodes_ ) {
                                                                 // "first" is key
                     shared_ptr<N> temp_N_ptr = make_shared<N>( *(it.first) );
-                    shared_ptr<Node> temp_Node_ptr = make_shared<Node>( *(it.first) );
+                    shared_ptr<Node> temp_Node_ptr = make_shared<Node>( temp_N_ptr );
                     
                     this->nodes_.emplace( temp_N_ptr, temp_Node_ptr );
                 }
@@ -94,8 +94,14 @@ namespace gdwg {
                  * also need this copy, but you have to go through src again in order to make a pointer referencing it 
                  * */ 
                 for( auto& it : _graph.edges_ ) {
-                    shared_ptr temp_edge = it.lock();
+                    shared_ptr<Edge> new_edge = copyEdge( it.lock() );
+                    
+                    shared_ptr<Node> temp_src_node = getNodePassedByNode( (*new_edge).src_.lock() );
+                    shared_ptr<Node> temp_dest_node = getNodePassedByNode( (*new_edge).dest_.lock() );
 
+                    (*temp_src_node).outcoming_.insert(new_edge);
+                    (*temp_dest_node).incoming_.insert(new_edge);
+                    this->edges_.insert(new_edge);
                 }
             } 
 
@@ -172,8 +178,8 @@ namespace gdwg {
                 shared_ptr<Node> temp_src_node = getNode( _src );
                 shared_ptr<Node> temp_dest_node = getNode( _dest );
 
-                (*temp_src_node).outcoming.insert(temp_edge);
-                (*temp_dest_node).incoming.insert(temp_edge);
+                (*temp_src_node).outcoming_.insert(temp_edge);
+                (*temp_dest_node).incoming_.insert(temp_edge);
 
                 this->edges_.insert(temp_edge);
                 
@@ -198,20 +204,20 @@ namespace gdwg {
                  * Question :
                  * if use reference here, temp_Node_ptr.outcoming.erase(self) will cause error or not???
                  */
-                for( auto it : (*temp_Node_ptr).outcoming ) {
+                for( auto it : (*temp_Node_ptr).outcoming_ ) {
                     // access dest node, then delete this edge in tis incoming
                     std::shared_ptr<Node> temp_dest = (*it).dest_.lock();
-                    (*temp_dest).incoming.erase(it);
+                    (*temp_dest).incoming_.erase(it);
 
-                    (*temp_Node_ptr).outcoming.erase(it);
+                    (*temp_Node_ptr).outcoming_.erase(it);
                     this->edges_.erase(it);
                 }
-                // same thing for incoming, but no need to delete in variable ""
-                for( auto& it : (*temp_Node_ptr).incoming ) {
+                // same thing for incoming_, but no need to delete in variable ""
+                for( auto& it : (*temp_Node_ptr).incoming_ ) {
                     std::shared_ptr<Node> temp_src = (*it).src_.lock();
-                    (*temp_src).outcoming.erase(it);
+                    (*temp_src).outcoming_.erase(it);
 
-                    (*temp_Node_ptr).incoming.erase(it);
+                    (*temp_Node_ptr).incoming_.erase(it);
                 }
                 // last, delete node it self
                 this->nodes_.erase(temp_N_ptr);
@@ -365,9 +371,15 @@ namespace gdwg {
                     ;
                 }
             };
+
+            /**
+             * Attention for Node constructor
+             * The shared_ptr must be passed by reference, because this->nodes_.key() is created first before value
+             * and key() is shared_ptr
+             */
             typedef struct Node
             {
-                Node( shared_ptr<N> name ) : name_{name} {}
+                Node( const shared_ptr<N>& _name ) : name_{_name} {}
                 std::weak_ptr<N> name_;
                 // std::set< std::shared_ptr<Edge>, []( const shared_ptr<Edge> lhs, const shared_ptr<Edge> rhs ) {
                 //                                         return (
@@ -376,39 +388,54 @@ namespace gdwg {
                 //                                         );
                 //                                             }
                 // > outcoming;
-                std::set< std::shared_ptr<Edge>, EdgeComparator_shared > outcoming;
-                std::set< std::shared_ptr<Edge>, EdgeComparator_shared > incoming;
+                std::set< std::shared_ptr<Edge>, EdgeComparator_shared > outcoming_;
+                std::set< std::shared_ptr<Edge>, EdgeComparator_shared > incoming_;
             }Node;
 
+            /**
+             * same reason for Edge from Node
+             */
             typedef struct Edge
             {
-                Edge( shared_ptr<Node> src, shared_ptr<Node> dest, E weight ) : src_{src}, dest_{dest}, weight_{weight} {}
+                Edge( const shared_ptr<Node>& _src, const shared_ptr<Node>& _dest, const E& _weight ) : src_{_src}, dest_{_dest}, weight_{_weight} {}
                 std::weak_ptr<Node> src_;
                 std::weak_ptr<Node> dest_;
                 E weight_;
             }Edge;
 
             /**
-             * assume node exists
+             * has to be that node exists
              * 
              * you can not declare it as public, since struct Node is encapsulated
              * diff wtih getNodes()
              */
-            shared_ptr<Node> getNode( const N& val )
+            shared_ptr<Node>& getNode( const N& _val )
             {
-                shared_ptr<N> temp_N_ptr = make_shared<N>( val );
-                shared_ptr<Node> temp_Node_ptr = this->nodes_.find(temp_N_ptr)->second;
-                return temp_Node_ptr;
+                shared_ptr<N> temp_N_ptr = make_shared<N>( _val );
+                // debug test ---------------------------- delete
+                if( this->nodes_.find(temp_N_ptr) == this->nodes_.end() ) {
+                    throw std::runtime_error("impossible, src node does not exist")
+                }
+                // debug test ---------------------------- delete
+                return this->nodes_.find(temp_N_ptr)->second;
             }   
             
             /**
              * 
+             * Node must exist
+             * 
+             * when you pass a node, extract the variable "name_", 
+             * use this info to find existing node in current graph
              */
-            shared_ptr<Node> getNode( const N& val )
+            shared_ptr<Node>& getNodePassedByNode( const shared_ptr<Node>& _node )
             {
-                shared_ptr<N> temp_N_ptr = make_shared<N>( val );
-                shared_ptr<Node> temp_Node_ptr = this->nodes_.find(temp_N_ptr)->second;
-                return temp_Node_ptr;
+                shared_ptr<N> temp_node = (*_node).name_.lock();
+                // debug test ---------------------------- delete
+                if( this->nodes_.find( temp_node ) == this->nodes_.end() ) {
+                    throw std::runtime_error("impossible, src node does not exist")
+                }
+                // debug test ---------------------------- delete
+                return this->nodes_.find( temp_node )->second;
             }
 
             // shared_ptr<Node> makeNode( const N& val )
@@ -418,42 +445,33 @@ namespace gdwg {
             //     return new_Node;
             // }
 
-            shared_ptr<Edge> makeEdge( const N& src, const N& dest, const E& w ) 
+            /**
+             * here the reason to pass reference is to save time
+             * in function body, the edge is created by make_shared<>
+             */
+            shared_ptr<Edge>& makeEdge( const N& _src, const N& _dest, const E& _w ) 
             {
-                shared_ptr<Node> temp_src = getNode(src);
-                shared_ptr<Node> temp_dest = getNode(dest);
+                shared_ptr<Node> temp_src = getNode(_src);
+                shared_ptr<Node> temp_dest = getNode(_dest);
 
-                shared_ptr<Edge> temp_edge = make_shared<Edge>( temp_src, temp_dest, w );
+                shared_ptr<Edge> temp_edge = make_shared<Edge>( temp_src, temp_dest, _w );
                 return temp_edge;
             }
 
             /**
+             * Be careful, here, the node you find in new graph should be returned by reference instead of value
+             * Reason : before coping edges, node already created, so you have to pass reference to edges,
+             * to let the member in edges to pointing the same resource i.e. nodes
+             * 
              * the nodes needed for this function should already exists
              * becuase we are just coping an existing edge, so just pass const refernece to save time
              */
-            shared_ptr<Edge> copyEdge( const shared_ptr<Edge>0.& _edge )
+            shared_ptr<Edge>& copyEdge( const shared_ptr<Edge>0.& _edge )
             {
-                shared_ptr<Node> target_src_node = (*_edge).src_.lock();
-                shared_ptr<N> existing_src_node_name = (*target_src_node).name_.lock();
-                shared_ptr<N> existing_src_N = make_shared<N>( *existing_src_node_name )
-                // debug test ---------------------------- delete
-                if( this->nodes_.find(existing_src_N) == this->nodes_.end() ) {
-                    throw std::runtime_error("impossible, src node does not exist")
-                }
-                // debug test ---------------------------- delete
-                shared_ptr<Node> existing_src_node = *( this->nodes_.find(existing_src_N) );
+                
+                shared_ptr<Node> existing_src_node = getNodePassedByNode( (*_edge).src_.lock() );
 
-
-                shared_ptr<Node> target_dest_node = (*_edge).dest_.lock();
-                shared_ptr<N> existing_dest_node_name = (*target_dest_node).name_.lock();
-                shared_ptr<N> existing_dest_N = make_shared<N>( *existing_dest_node_name )
-                // debug test ---------------------------- delete
-                if( this->nodes_.find(existing_dest_N) == this->nodes_.end() ) {
-                    throw std::runtime_error("impossible, dest node does not exist")
-                }
-                // debug test ---------------------------- delete
-                shared_ptr<Node> existing_dest_node = *( this->nodes_.find(existing_dest_N) );
-
+                shared_ptr<Node> existing_dest_node = getNodePassedByNode( (*_edge).dest_.lock() );
 
                 shared_ptr<Edge> edge = make_shared<Edge>( existing_src_node,
                                                             existing_dest_node,
