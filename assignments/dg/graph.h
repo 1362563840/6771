@@ -1,6 +1,7 @@
 #ifndef ASSIGNMENTS_DG_GRAPH_H_
 #define ASSIGNMENTS_DG_GRAPH_H_
 
+#include <algorithm>
 #include <cstdlib>
 #include <exception>
 #include <iostream>
@@ -374,18 +375,38 @@ namespace gdwg {
         
             std::vector<N> GetConnected(const N& _src) 
             {
-                vector<N> result;
+                if( IsNode(_src) == false ) {
+                    stringstream ss;
+                    ss << "Cannot call Graph::GetConnected if src doesn't exist in the graph";
+                    throw std::runtime_error(ss.str());
+                }
+                set<N> temp;
                 shared_ptr<Node> temp_src_node = getNode( _src );
                 for( auto& it : (*temp_src_node).outcoming_ ) {
                     shared_ptr<N> temp_dest_node_name = get_dest_N_ptr_from_edge(it);
-                    result.push_back( *temp_dest_node_name );
+                    temp.insert( *temp_dest_node_name );
                 }
+                vector<N> result;
+                std::copy(temp.cbegin(), temp.cend(), std::back_inserter(result));
                 return result;
             }
 
-            std::vector<E> GetWeights(const N& src, const N& dst)
+            std::vector<E> GetWeights(const N& _src, const N& _dest)
             {
-
+                if( IsNode(_src) == false ) {
+                    stringstream ss;
+                    ss << "Cannot call Graph::GetWeights if src or dst node don't exist in the graph";
+                    throw std::runtime_error(ss.str());
+                }
+                vector<E> result;
+                shared_ptr<Node> temp_src_node = getNode( _src );
+                for( auto& it : (*temp_src_node).outcoming_ ) {
+                    shared_ptr<N> temp_dest_node_name = get_dest_N_ptr_from_edge(it);
+                    if( *temp_dest_node_name == _dest ) {
+                        result.push_back( (*it).weight_ );
+                    }
+                }
+                return result;
             }
             /**
              * go through each node and print out info
