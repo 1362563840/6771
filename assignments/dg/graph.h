@@ -212,10 +212,10 @@ namespace gdwg {
                     // std::cout << "still have " << (*((*temp_target_node).outcoming_.find(it))).use_count() << std::endl;
                     (*temp_target_node).outcoming_.erase(it);
                     // debug test -------------------------------- delete
-                    if( (*(this->edges_.find(it))).use_count() != 1 ) {
-                        std::cout << "still have " << (*(this->edges_.find(it))).use_count() << std::endl;
-                        throw std::runtime_error("impossible, delete fail");
-                    }
+                    // if( (*(this->edges_.find(it))).use_count() != 1 ) {
+                    //     std::cout << "still have " << (*(this->edges_.find(it))).use_count() << std::endl;
+                    //     throw std::runtime_error("impossible, delete fail");
+                    // }
                     // debug test -------------------------------- delete
                     this->edges_.erase(it);
                 }
@@ -227,10 +227,10 @@ namespace gdwg {
                     (*temp_target_node).incoming_.erase(it);
                     // debug test -------------------------------- delete
                     // because variable "it" is also shared_ptr
-                    if( (*(this->edges_.find(it))).use_count() != 1 ) {
-                        std::cout << "still have " << (*(this->edges_.find(it))).use_count() << std::endl;
-                        throw std::runtime_error("impossible, delete fail");
-                    }
+                    // if( (*(this->edges_.find(it))).use_count() != 1 ) {
+                    //     std::cout << "still have " << (*(this->edges_.find(it))).use_count() << std::endl;
+                    //     throw std::runtime_error("impossible, delete fail");
+                    // }
                     // debug test -------------------------------- delete
                     this->edges_.erase(it);
                 }
@@ -254,17 +254,31 @@ namespace gdwg {
                 if( IsNode( _newData ) == true ) {
                     return false;
                 }
-                shared_ptr<N> temp_N_ptr = make_shared<N>( _oldData );
-                
-                // shared_ptr<Node> temp_node_ptr = getNode( _oldData );
-                // shared_ptr<N> temp_node_ptr_name = (*temp_node_ptr).name_.lock();
-                // *temp_node_ptr_name = _newData;
+                shared_ptr<N> temp_old_N_ptr = make_shared<N>( _oldData );
+                shared_ptr<Node> temp_old_node = this->nodes_.find( temp_old_N_ptr )->second;
+                         
+                set< shared_ptr<Edge> > backup_outcoming;
+                set< shared_ptr<Edge> > backup_incoming;
+                /**
+                 * Question, &it or it , possible bug
+                 */
+                for( auto& it : (*temp_old_node).outcoming_ ) {
+                    backup_outcoming.insert( it );
+                }
+                for( auto& it : (*temp_old_node).incoming_ ) {
+                    backup_incoming.insert( it );
+                }
 
-                auto temp_node_handler = this->nodes_.extract(temp_N_ptr);
-                shared_ptr<N> temp_key_name = temp_node_handler.key();
-                *temp_key_name = _newData;
+                DeleteNode( _oldData );
+                InsertNode( _newData );
+                for( auto& it : backup_outcoming ) {
+                    this->InsertEdgeWithNewSrc( it, _newData );
+                }
+
+                for( auto& it : backup_incoming ) {
+                    this->InsertEdgeWithNewDest( it, _newData );
+                }
                 
-                this->nodes_.insert( std::move(temp_node_handler) );
                 return true;
             }
 
@@ -302,7 +316,7 @@ namespace gdwg {
                 _out << "\n";
                 return _out;
             }
-            
+
             void check() 
             {
                 for( auto& it : this->nodes_ ) {
@@ -469,6 +483,8 @@ namespace gdwg {
             // }
 
             /**
+             * Assume, src, dest nodes exist
+             * 
              * here the reason to pass reference is to save time
              * in function body, the edge is created by make_shared<>
              */
@@ -502,6 +518,26 @@ namespace gdwg {
                                                         );
                 
                 return edge;
+            }
+
+            bool InsertEdgeWithNewSrc( const shared_ptr<Edge>& _edge, const N& _new_src )
+            {
+
+                shared_ptr<Node> temp_dest_node = (*_edge).dest_.lock();
+                shared_ptr<N> temp_dest_node_name = (*temp_dest_node).name_.lock();
+
+                InsertEdge( _new_src, *temp_dest_node_name, (*_edge).weight_ );
+                return true;
+            }
+
+            bool InsertEdgeWithNewDest( const shared_ptr<Edge>& _edge, const N& _new_dest )
+            {
+
+                shared_ptr<Node> temp_src_node = (*_edge).src_.lock();
+                shared_ptr<N> temp_src_node_name = (*temp_src_node).name_.lock();
+
+                InsertEdge( *temp_src_node_name, _new_dest, (*_edge).weight_ );
+                return true;
             }
             /**
              * one possible bug, key is shared_ptr<N>
