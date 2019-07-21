@@ -254,8 +254,10 @@ namespace gdwg {
                 if( IsNode( _newData ) == true ) {
                     return false;
                 }
-                shared_ptr<N> temp_old_N_ptr = make_shared<N>( _oldData );
-                shared_ptr<Node> temp_old_node = this->nodes_.find( temp_old_N_ptr )->second;
+                // shared_ptr<N> temp_old_N_ptr = make_shared<N>( _oldData );
+                // shared_ptr<Node> temp_old_node = this->nodes_.find( temp_old_N_ptr )->second;
+
+                shared_ptr<Node> temp_old_node = getNode( _oldData );
                          
                 set< shared_ptr<Edge> > backup_outcoming;
                 set< shared_ptr<Edge> > backup_incoming;
@@ -282,7 +284,54 @@ namespace gdwg {
                 return true;
             }
 
-            bool IsNode(const N& _val)
+            void MergeReplace(const N& _oldData, const N& _newData)
+            {
+                if( IsNode( _oldData ) == false ) {
+                    stringstream ss;
+                    ss << "Cannot call Graph::MergeReplace on old or new data if they don't exist in the graph";
+                    throw std::runtime_error(ss.str());
+                }
+                if( IsNode( _newData ) == false ) {
+                    stringstream ss;
+                    ss << "Cannot call Graph::MergeReplace on old or new data if they don't exist in the graph";
+                    throw std::runtime_error(ss.str());
+                }
+
+                // shared_ptr<N> temp_old_N_ptr = make_shared<N>( _oldData );
+                // shared_ptr<Node> temp_old_node = this->nodes_.find( temp_old_N_ptr )->second;
+                
+                shared_ptr<Node> temp_old_node = getNode( _oldData );
+
+                set< shared_ptr<Edge> > backup_outcoming;
+                set< shared_ptr<Edge> > backup_incoming;
+                /**
+                 * Question, &it or it , possible bug
+                 */
+                for( auto& it : (*temp_old_node).outcoming_ ) {
+                    backup_outcoming.insert( it );
+                }
+                for( auto& it : (*temp_old_node).incoming_ ) {
+                    backup_incoming.insert( it );
+                }
+
+                DeleteNode( _oldData );
+                for( auto& it : backup_outcoming ) {
+                    this->InsertEdgeWithNewSrc( it, _newData );
+                }
+
+                for( auto& it : backup_incoming ) {
+                    this->InsertEdgeWithNewDest( it, _newData );
+                }
+
+            }
+
+            void Clear()
+            {
+                this->nodes_.clear();
+                this->edges_.clear();
+            }
+
+            bool IsNode(const N& _val) const
             {
                 shared_ptr<N> temp_N_ptr = make_shared<N>( _val );
                 if( this->nodes_.find(temp_N_ptr) != this->nodes_.end() ) {
@@ -291,6 +340,53 @@ namespace gdwg {
                 return false;
             }
             
+            bool IsConnected(const N& _src, const N& _dest) const
+            {
+                if( IsNode( _src ) == false ) {
+                    stringstream ss;
+                    ss << "Cannot call Graph::IsConnected if src or dst node don't exist in the graph";
+                    throw std::runtime_error(ss.str());
+                }
+                if( IsNode( _dest ) == false ) {
+                    stringstream ss;
+                    ss << "If either node cannot be found in the graph";
+                    throw std::runtime_error(ss.str());
+                }
+
+                shared_ptr<Node> temp_src_node = getNode( _src );
+                for( auto& it : (*temp_src_node).outcoming_  ) {
+                    const shared_ptr<N> temp_dest_node_name = get_dest_N_ptr_from_edge( it );
+                    if( *temp_dest_node_name == _dest ) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            std::vector<N> GetNodes() const
+            {
+                vector<N> result;
+                for( auto& it : this->nodes_ ) {
+                    result.push_back( *(it.first) );
+                }
+                return result;
+            }
+        
+            std::vector<N> GetConnected(const N& _src) const
+            {
+                vector<N> result;
+                shared_ptr<Node> temp_src_node = getNode( _src );
+                for( auto& it : (*temp_src_node).outcoming_ ) {
+                    const shared_ptr<N> temp_dest_node_name = get_dest_N_ptr_from_edge(it);
+                    result.push_back( *temp_dest_node_name );
+                }
+                return result;
+            }
+
+            std::vector<E> GetWeights(const N& src, const N& dst)
+            {
+
+            }
             /**
              * go through each node and print out info
              */
@@ -304,8 +400,7 @@ namespace gdwg {
                     _out << *temp_src_node_name << " (" << "\n";
 
                     for( auto& each_edge : (*temp_src_node).outcoming_ ) {
-                        shared_ptr<Node> temp_dest_node = (*each_edge).dest_.lock();
-                        shared_ptr<N> temp_dest_node_name = (*temp_dest_node).name_.lock();
+                        const shared_ptr<N> temp_dest_node_name = _graph.get_dest_N_ptr_from_edge(each_edge);
 
                         _out << "  " << *temp_dest_node_name << " | " << (*each_edge).weight_ << "\n";                        
 
@@ -317,7 +412,7 @@ namespace gdwg {
                 return _out;
             }
 
-            void check() 
+            void check() const
             {
                 for( auto& it : this->nodes_ ) {
                     std::cout << "N size is " << it.first.use_count() << std::endl;
@@ -358,17 +453,12 @@ namespace gdwg {
                         std::exit(1);
                     }
                     // debug --------------------------------------
-                    shared_ptr<Node> lhs_src = (*_lhs).src_.lock();
-                    shared_ptr<Node> rhs_src = (*_rhs).src_.lock();
 
-                    shared_ptr<N> lhs_src_name = (*lhs_src).name_.lock();
-                    shared_ptr<N> rhs_src_name = (*rhs_src).name_.lock();
-
-                    shared_ptr<Node> lhs_dest = (*_lhs).dest_.lock();
-                    shared_ptr<Node> rhs_dest = (*_rhs).dest_.lock();
+                    const shared_ptr<N> lhs_src_name = get_src_N_ptr_from_edge(_lhs);
+                    const shared_ptr<N> rhs_src_name = get_src_N_ptr_from_edge(_rhs);
                     
-                    shared_ptr<N> lhs_dest_name = (*lhs_dest).name_.lock();
-                    shared_ptr<N> rhs_dest_name = (*rhs_dest).name_.lock();
+                    const shared_ptr<N> lhs_dest_name = get_dest_N_ptr_from_edge(_lhs);
+                    const shared_ptr<N> rhs_dest_name = get_dest_N_ptr_from_edge(_lhs);
 
                     return ( *lhs_src_name < *rhs_src_name ) ||
                             ( ( *lhs_src_name == *rhs_src_name ) && ( *lhs_dest_name < *rhs_dest_name ) ) ||
@@ -382,25 +472,19 @@ namespace gdwg {
             struct EdgeComparator_weak
             {
                 bool operator()(const weak_ptr<Edge>& __lhs, const weak_ptr<Edge>& __rhs) const {
-                    shared_ptr<Edge> _lhs = __lhs.lock();
-                    shared_ptr<Edge> _rhs = __rhs.lock();
+                    const shared_ptr<Edge> _lhs = __lhs.lock();
+                    const shared_ptr<Edge> _rhs = __rhs.lock();
                     // debug --------------------------------------
                     if( (*_lhs).dest_.expired() == true || (*_rhs).dest_.expired() == true ) {
                         std::cout << "expire impossible\n";
                         std::exit(1);
                     }
                     // debug --------------------------------------
-                    shared_ptr<Node> lhs_src = (*_lhs).src_.lock();
-                    shared_ptr<Node> rhs_src = (*_rhs).src_.lock();
-
-                    shared_ptr<N> lhs_src_name = (*lhs_src).name_.lock();
-                    shared_ptr<N> rhs_src_name = (*rhs_src).name_.lock();
-
-                    shared_ptr<Node> lhs_dest = (*_lhs).dest_.lock();
-                    shared_ptr<Node> rhs_dest = (*_rhs).dest_.lock();
+                    const shared_ptr<N> lhs_src_name = get_src_N_ptr_from_edge(_lhs);
+                    const shared_ptr<N> rhs_src_name = get_src_N_ptr_from_edge(_rhs);
                     
-                    shared_ptr<N> lhs_dest_name = (*lhs_dest).name_.lock();
-                    shared_ptr<N> rhs_dest_name = (*rhs_dest).name_.lock();
+                    const shared_ptr<N> lhs_dest_name = get_dest_N_ptr_from_edge(_lhs);
+                    const shared_ptr<N> rhs_dest_name = get_dest_N_ptr_from_edge(_lhs);
 
                     return ( *lhs_src_name < *rhs_src_name ) ||
                             ( ( *lhs_src_name == *rhs_src_name ) && ( *lhs_dest_name < *rhs_dest_name ) ) ||
@@ -441,12 +525,13 @@ namespace gdwg {
             }Edge;
 
             /**
+             * Question, do I declare return variable as const or not?
              * has to be that node exists
              * 
              * you can not declare it as public, since struct Node is encapsulated
              * diff wtih getNodes()
              */
-            shared_ptr<Node>& getNode( const N& _val )
+            shared_ptr<Node>& getNode( const N& _val ) const
             {
                 shared_ptr<N> temp_N_ptr = make_shared<N>( _val );
                 // debug test ---------------------------- delete
@@ -458,13 +543,13 @@ namespace gdwg {
             }   
             
             /**
-             * 
+             * Question, do I declare return variable as const or not?
              * Node must exist
              * 
              * when you pass a node, extract the variable "name_", 
              * use this info to find existing node in current graph
              */
-            shared_ptr<Node>& getNodePassedByNode( const shared_ptr<Node>& _node )
+            shared_ptr<Node>& getNodePassedByNode( const shared_ptr<Node>& _node ) const
             {
                 shared_ptr<N> temp_node = (*_node).name_.lock();
                 // debug test ---------------------------- delete
@@ -488,7 +573,7 @@ namespace gdwg {
              * here the reason to pass reference is to save time
              * in function body, the edge is created by make_shared<>
              */
-            shared_ptr<Edge> makeEdge( const N& _src, const N& _dest, const E& _w ) 
+            shared_ptr<Edge> makeEdge( const N& _src, const N& _dest, const E& _w ) const
             {
                 shared_ptr<Node> temp_src = getNode(_src);
                 shared_ptr<Node> temp_dest = getNode(_dest);
@@ -505,7 +590,7 @@ namespace gdwg {
              * the nodes needed for this function should already exists
              * becuase we are just coping an existing edge, so just pass const refernece to save time
              */
-            shared_ptr<Edge> copyEdge( const shared_ptr<Edge>& _edge )
+            shared_ptr<Edge> copyEdge( const shared_ptr<Edge>& _edge ) const
             {
                 
                 shared_ptr<Node> existing_src_node = getNodePassedByNode( (*_edge).src_.lock() );
@@ -522,9 +607,7 @@ namespace gdwg {
 
             bool InsertEdgeWithNewSrc( const shared_ptr<Edge>& _edge, const N& _new_src )
             {
-
-                shared_ptr<Node> temp_dest_node = (*_edge).dest_.lock();
-                shared_ptr<N> temp_dest_node_name = (*temp_dest_node).name_.lock();
+                const shared_ptr<N> temp_dest_node_name = get_dest_N_ptr_from_edge(_edge);
 
                 InsertEdge( _new_src, *temp_dest_node_name, (*_edge).weight_ );
                 return true;
@@ -532,13 +615,24 @@ namespace gdwg {
 
             bool InsertEdgeWithNewDest( const shared_ptr<Edge>& _edge, const N& _new_dest )
             {
-
-                shared_ptr<Node> temp_src_node = (*_edge).src_.lock();
-                shared_ptr<N> temp_src_node_name = (*temp_src_node).name_.lock();
+                const shared_ptr<N> temp_src_node_name = get_src_N_ptr_from_edge(_edge);
 
                 InsertEdge( *temp_src_node_name, _new_dest, (*_edge).weight_ );
                 return true;
             }
+
+            const shared_ptr<N> get_src_N_ptr_from_edge( const shared_ptr<Edge>& _edge ) const
+            {
+                shared_ptr<Node> temp_src_node = (*_edge).src_.lock();
+                return (*temp_src_node).name_.lock();
+            }
+
+            const shared_ptr<N> get_dest_N_ptr_from_edge( const shared_ptr<Edge>& _edge ) const
+            {
+                shared_ptr<Node> temp_dest_node = (*_edge).dest_.lock();
+                return (*temp_dest_node).name_.lock();
+            }
+
             /**
              * one possible bug, key is shared_ptr<N>
              */
