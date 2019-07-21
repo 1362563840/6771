@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <exception>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <set>
@@ -26,6 +27,8 @@ using std::vector;
 using std::weak_ptr;
 
 namespace gdwg {
+    template<typename N, typename E>
+    class Iterator;
 
     template<typename N, typename E>
     class Graph {
@@ -124,7 +127,7 @@ namespace gdwg {
             }
 
             Graph<N, E>& operator=(gdwg::Graph<N, E>&& _rhs) noexcept
-            {
+            { 
                 std::cout << "move assignment\n";
                 this->nodes_ = std::move(_rhs.nodes_);
                 this->edges_ = std::move(_rhs.edges_);
@@ -132,10 +135,6 @@ namespace gdwg {
                 _rhs.edges.clear();
                 return *this;
             }
-
-            class const_iterator {
-                // const_iterator find(const N&, const N&, const E&);
-            };
 
             /**
              * Question, Do we need to check if it is node
@@ -446,7 +445,9 @@ namespace gdwg {
                 }
             }
 
-        private:            
+            
+        private:
+            friend class Iterator<N,E>;            
             struct Edge;
             struct Node;
             /**
@@ -673,6 +674,38 @@ namespace gdwg {
             std::map< shared_ptr<N>, shared_ptr<Node>, MapNodeComparator > nodes_;
             std::set< weak_ptr<Edge>, EdgeComparator_weak > edges_;
 
+    };
+
+    template<typename N, typename E>
+    class Iterator {
+        public:
+            typedef gdwg::Graph<N, E>::Edge Edge;
+            using iterator_category = std::bidirectional_iterator_tag;
+            using value_type = weak_ptr<Edge>;
+            using reference = weak_ptr<Edge>&;
+            using pointer = weak_ptr<Edge>*; // Not strictly required, but nice to have.
+            using difference_type = int;    // used to calculate distance, can be negative
+                                            // std::ptrdiff_t
+
+            reference operator*() const;
+            Iterator& operator++();
+            // Iterator operator++(int) {
+            //     auto copy{*this};
+            //     ++(*this);
+            //     return copy;
+            // }
+
+            pointer operator->() const { return &(operator*()); }
+
+            friend bool operator==(const Iterator& lhs, const Iterator& rhs) { 
+                return true;
+            };
+            friend bool operator!=(const Iterator& lhs, const Iterator& rhs) { return !(lhs == rhs); }
+
+        private:
+            std::weak_ptr<Edge> curr;
+            typename std::weak_ptr<Edge>::iterator curr ;
+            typename std::vector<Edge>::iterator end ;
     };
 
 }
