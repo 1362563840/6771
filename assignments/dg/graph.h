@@ -28,7 +28,10 @@ using std::weak_ptr;
 
 namespace gdwg {
     template<typename N, typename E>
-    class Iterator;
+    class const_iterator;
+
+    template<typename N, typename E>
+    class const_reverse_iterator;
 
     template<typename N, typename E>
     class Graph {
@@ -445,9 +448,140 @@ namespace gdwg {
                 }
             }
 
+            /**
+             * In order to increase the speed of find, we use set::find() which is binary search
+             * We first create a temp edge which is a shared_ptr<Edge>. It is find as long as we do not insert 
+             * W
+             */
+            const_iterator<N, E> find(const N& _src, const N& _dest, const E& _weight) 
+            {
+
+                shared_ptr<Edge> temp_edge = this->makeEdge( _src, _dest, _weight );
+
+                auto result = this->edges_.find( temp_edge );
+                if( result != this->edges_.end() ) {
+                    return const_iterator( *this, result, this->edges_.end() );
+                }
+                return this->end();
+            }
+
+            bool erase(const N& _src, const N& _dest, const E& _w)
+            {
+                const_iterator<N, E> it = this->find( _src, _dest, _w ); 
+                /**
+                 * Attention, it relies on operator == in class const_iterator
+                 */
+                if( it == this->edges.end() ) {
+                    return false;
+                }
+
+                // 
+                shared_ptr<Node> temp_src_node = this->getNode( _src );
+                shared_ptr<Node> temp_dest_node = this->getNode( _dest );
+                /**
+                 * Attention, it relies on opeartor *
+                 */
+                (*temp_src_node).outcoming_.erase(*it);
+                (*temp_dest_node).incoming.erase(*it);
+                return true;
+            }
             
+            const_iterator<N, E> cbegin()
+            {
+                return const_iterator<N,E>( *this, this->edges_.begin(), this->edges_.end() );
+            }
+
+            const_iterator<N, E> cend()
+            {
+                return const_iterator( *this, this->edges_.end(), this->edges_.end() );
+            }
+
+            const_reverse_iterator<N, E> crbegin()
+            {
+                return const_reverse_iterator( *this, this->edges_.rbegin(), this->edges_.rend() );
+            }
+
+            const_reverse_iterator<N, E> crend()
+            {
+                return const_reverse_iterator( *this, this->edges_.rend(), this->edges_.rend() );
+            }
+
+            const_iterator<N, E> begin()
+            {
+                return cbegin();
+            }
+
+            const_iterator<N, E> end()
+            {
+                return cend();
+            }
+            
+            const_reverse_iterator<N, E> rbegin()
+            {
+                return crbegin();
+            }
+
+            const_reverse_iterator<N, E> rend()
+            {
+                return crend();
+            }
+            
+            /**
+             * Attention, because iterator operator == need graph operator ==
+             * So it is very likely that there is a bug;
+             */
+            friend bool operator==(const gdwg::Graph<N, E>& _lhs, const gdwg::Graph<N, E>& _rhs)
+            {
+                if( _lhs.nodes_.size() != _rhs.nodes_.size() || _lhs.edges_.size() != _rhs.edges_.size() ) {
+                    return false;
+                }
+
+                auto lhs_nodes_it = _lhs.nodes_.cbegin();
+                auto rhs_nodes_it = _rhs.nodes_.cbegin();
+                for( ; lhs_nodes_it != _lhs.nodes_.cend() ; lhs_nodes_it++, rhs_nodes_it++  ) {
+                    shared_ptr<N> temp_lhs_node_name = (*lhs_nodes_it).first;
+                    shared_ptr<N> temp_rhs_node_name = (*rhs_nodes_it).first;
+                    if( *temp_lhs_node_name != *temp_rhs_node_name ) {
+                        return false;
+                    }
+                }
+
+                auto lhs_edge_it = _lhs.edges_.cbegin();
+                auto rhs_edge_it = _rhs.edges_.cbegin();
+                for( ; lhs_edge_it != _lhs.edges_.cend() ; lhs_edge_it++, rhs_edge_it++  ) {
+                    // shared_ptr<N> temp_lhs_src_node_name = _lhs.get_src_N_ptr_from_edge( (*lhs_edge_it).lock() );
+                    shared_ptr<Node> temp_lhs_src_node =  (*lhs_edge_it).lock()->src_.lock();
+                    shared_ptr<N> temp_lhs_src_node_name =  temp_lhs_src_node->name_.lock();
+                    // shared_ptr<N> temp_rhs_src_node_name = _rhs.get_src_N_ptr_from_edge( (*rhs_edge_it).lock() );
+                    shared_ptr<Node> temp_rhs_src_node =  (*rhs_edge_it).lock()->src_.lock();
+                    shared_ptr<N> temp_rhs_src_node_name =  temp_rhs_src_node->name_.lock();
+                    if( *temp_lhs_src_node_name != *temp_rhs_src_node_name || 
+                                            (*lhs_edge_it).lock()->weight_ != (*rhs_edge_it).lock()->weight_ ) {
+                        return false;
+                    }
+
+                    // shared_ptr<N> temp_lhs_dest_node_name = _lhs.get_dest_N_ptr_from_edge( (*lhs_edge_it).lock() );
+                    // shared_ptr<N> temp_rhs_dest_node_name = _rhs.get_dest_N_ptr_from_edge( (*rhs_edge_it).lock() );
+                    shared_ptr<Node> temp_lhs_dest_node =  (*lhs_edge_it).lock()->dest_.lock();
+                    shared_ptr<N> temp_lhs_dest_node_name =  temp_lhs_dest_node->name_.lock();
+
+                    shared_ptr<Node> temp_rhs_dest_node =  (*rhs_edge_it).lock()->dest_.lock();
+                    shared_ptr<N> temp_rhs_dest_node_name =  temp_rhs_dest_node->name_.lock();
+                    if( *temp_lhs_dest_node_name != *temp_rhs_dest_node_name ) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            friend bool operator!=(const gdwg::Graph<N, E>& _lhs, const gdwg::Graph<N, E>& _rhs)
+            {
+                return !(_lhs == _rhs );
+            }
+
         private:
-            friend class Iterator<N,E>;            
+            friend class const_iterator<N, E>;
+            friend class const_reverse_iterator<N, E>;            
             struct Edge;
             struct Node;
             /**
@@ -536,6 +670,7 @@ namespace gdwg {
             typedef struct Node
             {
                 Node( const shared_ptr<N>& _name ) : name_{_name} {}
+
                 std::weak_ptr<N> name_;
                 // std::set< std::shared_ptr<Edge>, []( const shared_ptr<Edge> lhs, const shared_ptr<Edge> rhs ) {
                 //                                         return (
@@ -554,6 +689,7 @@ namespace gdwg {
             typedef struct Edge
             {
                 Edge( const shared_ptr<Node>& _src, const shared_ptr<Node>& _dest, const E& _weight ) : src_{_src}, dest_{_dest}, weight_{_weight} {}
+
                 std::weak_ptr<Node> src_;
                 std::weak_ptr<Node> dest_;
                 E weight_;
@@ -687,24 +823,189 @@ namespace gdwg {
             using difference_type = int;    // used to calculate distance, can be negative
                                             // std::ptrdiff_t
 
-            reference operator*() const;
-            const_iterator& operator++();
-            // Iterator operator++(int) {
-            //     auto copy{*this};
-            //     ++(*this);
-            //     return copy;
-            // }
+            /** 
+             * Question, Do i pass reference or value
+            */
+            const_iterator( typename gdwg::Graph<N,E>& _container,
+                            typename std::set< value_type >::const_iterator _curr,
+                            typename std::set< value_type >::const_iterator _end ) : container_{_container},
+                                                                                    curr_{_curr}, 
+                                                                                    end_{_end},
+                                                                                    increment_{1} {}
 
-            pointer operator->() const { return &(operator*()); }
+            const_iterator( typename gdwg::Graph<N,E>& _container,
+                            typename std::set< value_type >::const_iterator _curr,
+                            typename std::set< value_type >::const_iterator _end, 
+                            int _increment ) :   container_{_container},
+                                                curr_{_curr}, 
+                                                end_{_end}, 
+                                                increment_{_increment} {}
 
-            friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) { 
+            const_iterator( const const_iterator& _another ) : container_{_another.container_}, 
+                                                                curr_{_another.curr_}, 
+                                                                end_{_another.end_},
+                                                                increment_{_another.increment_} {}
+
+            
+
+            reference operator*() const
+            {
+                std::cout << "deferencing pointer\n";
+                return *curr_;
+            }
+            const_iterator& operator++()
+            {
+                curr_ = curr_ + increment_;
+                return *this;
+            }
+            const_iterator& operator++(int)
+            {
+                auto temp{*this};
+                ++(*this);
+                return temp;
+            }
+
+            const_iterator& operator--()
+            {
+                curr_ = curr_ - increment_;
+                return *this;
+            }
+            const_iterator& operator--(int)
+            {
+                auto temp{*this};
+                --(*this);
+                return temp;
+            }
+
+            /**
+             * Attention : possinle bug
+             */
+            pointer operator->() const { return &(this->operator*()); }
+
+            friend bool operator==(const const_iterator& _lhs, const const_iterator& _rhs) { 
+                /**
+                 * Attention :
+                 * a class iterator vs a class iterator
+                 * if they do no point same instance of object, they are not equal
+                 * then need to compare values;
+                 * Attention : possible bug
+                 * rely on class graph operator ==
+                 */
+                if( &(_lhs.container_) != &(_rhs.container_) ) {
+                    return false;
+                }
+                /**
+                 * Question : when a set has shared_ptr<custom object>, set s1 == set s2, the process, 
+                 * Does it call Object operator == ????
+                 * 
+                 * 
+                 * Attention : possible bug
+                 * rely on class graph operator ==
+                 */
+                if( _lhs.curr_ != _rhs.curr_ ||  _lhs.end_ != _rhs.end_ ) {
+                    return false;
+                }
                 return true;
-            };
-            friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) { return !(lhs == rhs); }
+            }
+            friend bool operator!=(const const_iterator& _lhs, const const_iterator& _rhs) { return !(_lhs == _rhs); }
 
         private:
-            typename std::set< weak_ptr<Edge> >::iterator curr ;
-            typename std::set< weak_ptr<Edge> >::iterator end ;
+            typename gdwg::Graph<N,E>& container_;
+            typename std::set< weak_ptr<Edge> >::const_iterator curr_ ;
+            typename std::set< weak_ptr<Edge> >::const_iterator end_ ;
+            int increment_;
+    };
+
+template<typename N, typename E>
+    class const_reverse_iterator {
+        public:
+            typedef typename gdwg::Graph<N, E>::Edge Edge;
+            using iterator_category = std::bidirectional_iterator_tag;
+            using value_type = weak_ptr<Edge>;
+            using reference = weak_ptr<Edge>&;
+            using pointer = weak_ptr<Edge>*; // Not strictly required, but nice to have.
+            using difference_type = int;    // used to calculate distance, can be negative
+                                            // std::ptrdiff_t
+
+            /** 
+             * Question, Do i pass reference or value
+            */
+            const_reverse_iterator( typename gdwg::Graph<N,E>& _container,
+                            typename std::set< value_type >::const_reverse_iterator _curr,
+                            typename std::set< value_type >::const_reverse_iterator _end ) : container_{_container},
+                                                                                    curr_{_curr}, 
+                                                                                    end_{_end},
+                                                                                    increment_{1} {}
+
+            const_reverse_iterator( typename gdwg::Graph<N,E&> _container,
+                            typename std::set< value_type >::const_reverse_iterator _curr,
+                            typename std::set< value_type >::const_reverse_iterator _end, 
+                            int _increment ) :   container_{_container},
+                                                curr_{_curr}, 
+                                                end_{_end}, 
+                                                increment_{_increment} {}
+
+            const_reverse_iterator( const const_reverse_iterator& _another ) : container_{_another.container_}, 
+                                                                curr_{_another.curr_}, 
+                                                                end_{_another.end_},
+                                                                increment_{_another.increment_} {}
+
+            
+
+            reference operator*() const
+            {
+                std::cout << "deferencing pointer\n";
+                return *curr_;
+            }
+            const_reverse_iterator& operator++()
+            {
+                curr_ = curr_ + increment_;
+                return *this;
+            }
+            const_reverse_iterator& operator++(int)
+            {
+                auto temp{*this};
+                ++(*this);
+                return temp;
+            }
+
+            const_reverse_iterator& operator--()
+            {
+                curr_ = curr_ - increment_;
+                return *this;
+            }
+            const_reverse_iterator& operator--(int)
+            {
+                auto temp{*this};
+                --(*this);
+                return temp;
+            }
+
+            /**
+             * Attention : possinle bug
+             */
+            pointer operator->() const { return &(this->operator*()); }
+
+            friend bool operator==(const const_reverse_iterator& _lhs, const const_reverse_iterator& _rhs) { 
+                /**
+                 * Attention : possible bug
+                 * rely on class graph operator ==
+                 */
+                if( &(_lhs.container_) != &(_rhs.container_) ) {
+                    return false;
+                }
+                if( _lhs.curr_ != _rhs.curr_ ||  _lhs.end_ != _rhs.end_ ) {
+                    return false;
+                }
+                return true;
+            }
+            friend bool operator!=(const const_reverse_iterator& _lhs, const const_reverse_iterator& _rhs) { return !(_lhs == _rhs); }
+
+        private:
+            typename gdwg::Graph<N,E>& container_;
+            typename std::set< weak_ptr<Edge> >::const_reverse_iterator curr_ ;
+            typename std::set< weak_ptr<Edge> >::const_reverse_iterator end_ ;
+            int increment_;
     };
 
 }
