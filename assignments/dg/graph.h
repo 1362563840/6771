@@ -677,9 +677,9 @@ namespace gdwg {
     };
 
     template<typename N, typename E>
-    class Iterator {
+    class const_iterator {
         public:
-            typedef gdwg::Graph<N, E>::Edge Edge;
+            typedef typename gdwg::Graph<N, E>::Edge Edge;
             using iterator_category = std::bidirectional_iterator_tag;
             using value_type = weak_ptr<Edge>;
             using reference = weak_ptr<Edge>&;
@@ -688,7 +688,7 @@ namespace gdwg {
                                             // std::ptrdiff_t
 
             reference operator*() const;
-            Iterator& operator++();
+            const_iterator& operator++();
             // Iterator operator++(int) {
             //     auto copy{*this};
             //     ++(*this);
@@ -697,15 +697,14 @@ namespace gdwg {
 
             pointer operator->() const { return &(operator*()); }
 
-            friend bool operator==(const Iterator& lhs, const Iterator& rhs) { 
+            friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) { 
                 return true;
             };
-            friend bool operator!=(const Iterator& lhs, const Iterator& rhs) { return !(lhs == rhs); }
+            friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) { return !(lhs == rhs); }
 
         private:
-            std::weak_ptr<Edge> curr;
-            typename std::weak_ptr<Edge>::iterator curr ;
-            typename std::vector<Edge>::iterator end ;
+            typename std::set< weak_ptr<Edge> >::iterator curr ;
+            typename std::set< weak_ptr<Edge> >::iterator end ;
     };
 
 }
