@@ -459,17 +459,54 @@ namespace gdwg {
             }
 
             /**
+             * Debug function
+             * check self
              * check if edges in this->nodes_ is exactly same as edges_ in this->edges_
              */
             bool selfCheck(  )
             {
-                // for() {
+                std::cout << "This graph has " << this->nodes_.size() << " nodes." << " also has " <<  this->edges_.size() << " edges\n";
 
-                // }
+                int total_edges_num{0};
+                for( auto& it : this->nodes_ ) {
+                    shared_ptr<N> temp_node_name = it.first;
+                    shared_ptr<Node> temp_node = it.second;
+                    
+                    int how_many_outcoming_edges{0};
+                    for( auto& each_edge : temp_node->outcoming_ ) {
+                        total_edges_num++;
+                        how_many_outcoming_edges++;
+                        shared_ptr<N> temp_src_node_name = this->get_src_N_ptr_from_edge( each_edge );
+                        shared_ptr<N> temp_dest_node_name = this->get_dest_N_ptr_from_edge( each_edge );
+                         
+                        if( IsNode( *temp_dest_node_name ) == false ) {
+                            std::cout << "this edge's dest node does not exist\n";
+                            std::cout << "src is " << *temp_src_node_name << " dest is " << temp_dest_node_name << " weight is " << each_edge->weight_ << "\n";
+                            exit(1);
+                        }
+                        shared_ptr<Node> temp_dest_node = this->getNode( *temp_dest_node_name );
+
+                        auto result = temp_dest_node->incoming_.find( each_edge );
+
+                        if( result == temp_dest_node->incoming_.end() ) {
+                            std::cout << "in src node, it has an edge, but in the corresponding dest not, it does not have \n";
+                            std::cout << "src is " << *temp_src_node_name << " dest is " << temp_dest_node_name << " weight is " << each_edge->weight_ << "\n";
+                            exit(1);
+                        }
+                    }
+
+                    std::cout << "This node's name is " << *temp_node_name << " . It has " << how_many_outcoming_edges << " outcoming edges\n";
+                    how_many_outcoming_edges = 0;
+                }
+
+                if( total_edges_num != this->edges_.size() ) {
+                    std::cout << "edges number is not correct\n";
+                    std::cout << "the set has " << this->edges_.size() << " while nodes has " << total_edges_num << "\n";
+                }
                 return true;
             }
 
-            /**
+            /** 
              * In order to increase the speed of find, we use set::find() which is binary search
              * We first create a temp edge which is a shared_ptr<Edge>. It is find as long as we do not insert 
              * W
