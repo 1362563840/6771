@@ -448,6 +448,27 @@ namespace gdwg {
                 }
             }
 
+            void display( const_iterator<N, E>& _curr )
+            {
+                shared_ptr<Node> temp_src = (*_curr).lock()->src_.lock();
+                shared_ptr<N> temp_src_name = temp_src->name_.lock();
+                shared_ptr<Node> temp_dest = (*_curr).lock()->dest_.lock();
+                shared_ptr<N> temp_destc_name = temp_dest->name_.lock();
+                
+                std::cout << "src name " << *temp_src_name << " dest name " << *temp_destc_name << " weight_ " << (*_curr).lock()->weight_ << "\n";
+            }
+
+            /**
+             * check if edges in this->nodes_ is exactly same as edges_ in this->edges_
+             */
+            bool selfCheck(  )
+            {
+                // for() {
+
+                // }
+                return true;
+            }
+
             /**
              * In order to increase the speed of find, we use set::find() which is binary search
              * We first create a temp edge which is a shared_ptr<Edge>. It is find as long as we do not insert 
@@ -460,7 +481,7 @@ namespace gdwg {
 
                 auto result = this->edges_.find( temp_edge );
                 if( result != this->edges_.end() ) {
-                    return const_iterator( *this, result, this->edges_.end() );
+                    return const_iterator<N, E>( *this, result, this->edges_.end() );
                 }
                 return this->end();
             }
@@ -471,7 +492,7 @@ namespace gdwg {
                 /**
                  * Attention, it relies on operator == in class const_iterator
                  */
-                if( it == this->edges.end() ) {
+                if( it == this->end() ) {
                     return false;
                 }
 
@@ -480,10 +501,27 @@ namespace gdwg {
                 shared_ptr<Node> temp_dest_node = this->getNode( _dest );
                 /**
                  * Attention, it relies on opeartor *
+                 * You also need to delete edges in this->edges
                  */
-                (*temp_src_node).outcoming_.erase(*it);
-                (*temp_dest_node).incoming.erase(*it);
+                (*temp_src_node).outcoming_.erase( (*it).lock() );
+                (*temp_dest_node).incoming_.erase( (*it).lock() );
+                this->edges_.erase(*it);
+
                 return true;
+            }
+
+            const_iterator<N, E> erase(const_iterator<N, E>& _it)
+            {   
+                std::cout << "1\n";
+                shared_ptr<N> temp_src_node_name = this->get_src_N_ptr_from_edge((*_it).lock());
+                std::cout << "2\n";
+                shared_ptr<N> temp_dest_name = this->get_dest_N_ptr_from_edge((*_it).lock());
+                std::cout << "3\n";
+                auto next = ++const_iterator<N, E>(_it);
+                std::cout << "test\n";
+                this->display(next);
+                this->erase( *temp_src_node_name, *temp_dest_name, (*_it).lock()->weight_ );
+                return next;
             }
             
             const_iterator<N, E> cbegin()
@@ -493,17 +531,17 @@ namespace gdwg {
 
             const_iterator<N, E> cend()
             {
-                return const_iterator( *this, this->edges_.end(), this->edges_.end() );
+                return const_iterator<N, E>( *this, this->edges_.end(), this->edges_.end() );
             }
 
             const_reverse_iterator<N, E> crbegin()
             {
-                return const_reverse_iterator( *this, this->edges_.rbegin(), this->edges_.rend() );
+                return const_reverse_iterator<N, E>( *this, this->edges_.rbegin(), this->edges_.rend() );
             }
 
             const_reverse_iterator<N, E> crend()
             {
-                return const_reverse_iterator( *this, this->edges_.rend(), this->edges_.rend() );
+                return const_reverse_iterator<N, E>( *this, this->edges_.rend(), this->edges_.rend() );
             }
 
             const_iterator<N, E> begin()
@@ -850,29 +888,37 @@ namespace gdwg {
 
             reference operator*() const
             {
-                std::cout << "deferencing pointer\n";
-                return *curr_;
+                // std::cout << "deferencing pointer const version\n";
+                return *(this->curr_);
+            }
+
+            value_type operator*()
+            {
+                // std::cout << "deferencing pointer non const version \n";
+                return *(this->curr_);
             }
             const_iterator& operator++()
             {
-                curr_ = curr_ + increment_;
+                std::cout << "what is wrong 1 \n";
+                ++this->curr_;
                 return *this;
             }
-            const_iterator& operator++(int)
+            const_iterator operator++(int)
             {
-                auto temp{*this};
+                std::cout << "what is wrong 2 \n";
+                const_iterator temp{*this};
                 ++(*this);
                 return temp;
             }
 
             const_iterator& operator--()
             {
-                curr_ = curr_ - increment_;
+                --this->curr_;
                 return *this;
             }
             const_iterator& operator--(int)
             {
-                auto temp{*this};
+                const_iterator temp{*this};
                 --(*this);
                 return temp;
             }
@@ -954,29 +1000,30 @@ template<typename N, typename E>
 
             reference operator*() const
             {
-                std::cout << "deferencing pointer\n";
+                // std::cout << "deferencing pointer\n";
                 return *curr_;
             }
             const_reverse_iterator& operator++()
             {
-                curr_ = curr_ + increment_;
+                std::cout << "what is wrong\n";
+                ++this->curr_;
                 return *this;
             }
-            const_reverse_iterator& operator++(int)
+            const_reverse_iterator operator++(int)
             {
-                auto temp{*this};
+                const_reverse_iterator temp{*this};
                 ++(*this);
                 return temp;
             }
 
             const_reverse_iterator& operator--()
             {
-                curr_ = curr_ - increment_;
+                --this->curr_;
                 return *this;
             }
             const_reverse_iterator& operator--(int)
             {
-                auto temp{*this};
+                const_reverse_iterator temp{*this};
                 --(*this);
                 return temp;
             }

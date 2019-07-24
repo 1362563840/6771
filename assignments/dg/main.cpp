@@ -47,3 +47,4 @@ int main() {
   std::cout << g;
   return 0;
 }
+std::set<std::weak_ptr<gdwg::Graph<std::__cxx11::basic_string<a>, int>::Edge>, b,a > >::const_iterator&
