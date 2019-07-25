@@ -510,7 +510,7 @@ namespace gdwg {
              * We first create a temp edge which is a shared_ptr<Edge>. It is find as long as we do not insert 
              * W
              */
-            const_iterator<N, E> find(const N& _src, const N& _dest, const E& _weight) 
+            const_iterator<N, E> find(const N& _src, const N& _dest, const E& _weight) const
             {
 
                 shared_ptr<Edge> temp_edge = this->makeEdge( _src, _dest, _weight );
@@ -560,42 +560,42 @@ namespace gdwg {
                 return next;
             }
             
-            const_iterator<N, E> cbegin()
+            const_iterator<N, E> cbegin() const
             {
                 return const_iterator<N,E>( *this, this->edges_.begin(), this->edges_.end() );
             }
 
-            const_iterator<N, E> cend()
+            const_iterator<N, E> cend() const
             {
                 return const_iterator<N, E>( *this, this->edges_.end(), this->edges_.end() );
             }
 
-            const_reverse_iterator<N, E> crbegin()
+            const_reverse_iterator<N, E> crbegin() const
             {
                 return const_reverse_iterator<N, E>( *this, this->edges_.rbegin(), this->edges_.rend() );
             }
 
-            const_reverse_iterator<N, E> crend()
+            const_reverse_iterator<N, E> crend() const
             {
                 return const_reverse_iterator<N, E>( *this, this->edges_.rend(), this->edges_.rend() );
             }
 
-            const_iterator<N, E> begin()
+            const_iterator<N, E> begin() const
             {
                 return cbegin();
             }
 
-            const_iterator<N, E> end()
+            const_iterator<N, E> end() const
             {
                 return cend();
             }
             
-            const_reverse_iterator<N, E> rbegin()
+            const_reverse_iterator<N, E> rbegin() const
             {
                 return crbegin();
             }
 
-            const_reverse_iterator<N, E> rend()
+            const_reverse_iterator<N, E> rend() const
             {
                 return crend();
             }
@@ -604,7 +604,7 @@ namespace gdwg {
              * Attention, because iterator operator == need graph operator ==
              * So it is very likely that there is a bug;
              */
-            friend bool operator==(const gdwg::Graph<N, E>& _lhs, const gdwg::Graph<N, E>& _rhs)
+            friend bool operator==(const gdwg::Graph<N, E>& _lhs, const gdwg::Graph<N, E>& _rhs) 
             {
                 if( _lhs.nodes_.size() != _rhs.nodes_.size() || _lhs.edges_.size() != _rhs.edges_.size() ) {
                     return false;
@@ -685,23 +685,11 @@ namespace gdwg {
                     }
                     // debug --------------------------------------
 
-                    // shared_ptr<Node> lhs_src = (*_lhs).src_.lock();
-                    // shared_ptr<Node> rhs_src = (*_rhs).src_.lock();
+                    const shared_ptr<const N> lhs_src_name = get_src_N_ptr_from_edge_static( _lhs );
+                    const shared_ptr<const N> rhs_src_name = get_src_N_ptr_from_edge_static( _rhs );
 
-                    // shared_ptr<N> lhs_src_name = (*lhs_src).name_.lock();
-                    // shared_ptr<N> rhs_src_name = (*rhs_src).name_.lock();
-
-                    const shared_ptr<const N> lhs_src_name = get_src_N_ptr_from_edge( _lhs );
-                    const shared_ptr<const N> rhs_src_name = get_src_N_ptr_from_edge( _rhs );
-
-                    // shared_ptr<Node> lhs_dest = (*_lhs).dest_.lock();
-                    // shared_ptr<Node> rhs_dest = (*_rhs).dest_.lock();
-
-                    // shared_ptr<N> lhs_dest_name = (*lhs_dest).name_.lock();
-                    // shared_ptr<N> rhs_dest_name = (*rhs_dest).name_.lock();
-
-                    const shared_ptr<const N> lhs_dest_name = get_dest_N_ptr_from_edge( _lhs );
-                    const shared_ptr<const N> rhs_dest_name = get_dest_N_ptr_from_edge( _rhs );
+                    const shared_ptr<const N> lhs_dest_name = get_dest_N_ptr_from_edge_static( _lhs );
+                    const shared_ptr<const N> rhs_dest_name = get_dest_N_ptr_from_edge_static( _rhs );
 
                     return ( *lhs_src_name < *rhs_src_name ) ||
                             ( ( *lhs_src_name == *rhs_src_name ) && ( *lhs_dest_name < *rhs_dest_name ) ) ||
@@ -723,17 +711,13 @@ namespace gdwg {
                         std::exit(1);
                     }
                     // debug --------------------------------------
-                    shared_ptr<Node> lhs_src = (*_lhs).src_.lock();
-                    shared_ptr<Node> rhs_src = (*_rhs).src_.lock();
 
-                    shared_ptr<N> lhs_src_name = (*lhs_src).name_.lock();
-                    shared_ptr<N> rhs_src_name = (*rhs_src).name_.lock();
+                    const shared_ptr<const N> lhs_src_name = get_src_N_ptr_from_edge_static( _lhs );
+                    const shared_ptr<const N> rhs_src_name = get_src_N_ptr_from_edge_static( _rhs );
 
-                    shared_ptr<Node> lhs_dest = (*_lhs).dest_.lock();
-                    shared_ptr<Node> rhs_dest = (*_rhs).dest_.lock();
 
-                    shared_ptr<N> lhs_dest_name = (*lhs_dest).name_.lock();
-                    shared_ptr<N> rhs_dest_name = (*rhs_dest).name_.lock();
+                    const shared_ptr<const N> lhs_dest_name = get_dest_N_ptr_from_edge_static( _lhs );
+                    const shared_ptr<const N> rhs_dest_name = get_dest_N_ptr_from_edge_static( _rhs );
 
                     return ( *lhs_src_name < *rhs_src_name ) ||
                             ( ( *lhs_src_name == *rhs_src_name ) && ( *lhs_dest_name < *rhs_dest_name ) ) ||
@@ -749,7 +733,7 @@ namespace gdwg {
              */
             typedef struct Node
             {
-                Node( const shared_ptr<N>& _name ) : name_{_name} {}
+                Node( const shared_ptr< N>& _name ) : name_{_name} {}
 
                 std::weak_ptr<N> name_;
                 // std::set< std::shared_ptr<Edge>, []( const shared_ptr<Edge> lhs, const shared_ptr<Edge> rhs ) {
@@ -768,7 +752,7 @@ namespace gdwg {
              */
             typedef struct Edge
             {
-                Edge( const shared_ptr<Node>& _src, const shared_ptr<Node>& _dest, const E& _weight ) : src_{_src}, dest_{_dest}, weight_{_weight} {}
+                Edge( const shared_ptr< Node>& _src, const shared_ptr< Node>& _dest, const E& _weight ) : src_{_src}, dest_{_dest}, weight_{_weight} {std::cout << "called\n";}
 
                 std::weak_ptr<Node> src_;
                 std::weak_ptr<Node> dest_;
@@ -783,7 +767,7 @@ namespace gdwg {
              * you can not declare it as public, since struct Node is encapsulated
              * diff wtih getNodes()
              */
-            const shared_ptr< const Node> getNode( const N& _val ) const
+             shared_ptr<  Node> getNode( const N& _val ) const
             {
                 std::cout << "getNode() const version\n";
                 shared_ptr<N> temp_N_ptr = make_shared<N>( _val );
@@ -845,9 +829,22 @@ namespace gdwg {
              */
             shared_ptr<Edge> makeEdge( const N& _src, const N& _dest, const E& _w ) 
             {
-                shared_ptr<Node> temp_src = getNode(_src);
-                shared_ptr<Node> temp_dest = getNode(_dest);
+                std::cout << "makeEdge() non const version\n";
+                shared_ptr< Node> temp_src = getNode(_src);
+                shared_ptr< Node> temp_dest = getNode(_dest);
 
+                shared_ptr<Edge> temp_edge = make_shared<Edge>( temp_src, temp_dest, _w );
+                return temp_edge;
+            }
+
+            shared_ptr<Edge> makeEdge( const N& _src, const N& _dest, const E& _w ) const
+            {
+                std::cout << "makeEdge() const version\n";
+                shared_ptr< Node> temp_src = getNode(_src);
+                shared_ptr< Node> temp_dest = getNode(_dest);
+                /**
+                 * Question const parsed
+                 */
                 shared_ptr<Edge> temp_edge = make_shared<Edge>( temp_src, temp_dest, _w );
                 return temp_edge;
             }
@@ -891,30 +888,38 @@ namespace gdwg {
                 return true;
             }
 
-            static shared_ptr<N> get_src_N_ptr_from_edge( const shared_ptr<Edge>& _edge ) 
+            shared_ptr<N> get_src_N_ptr_from_edge( const shared_ptr<Edge>& _edge )
             {
-                std::cout << "get_src_N_ptr_from_edge() non const verison\n";
-                shared_ptr<Node> temp_src_node = (*_edge).src_.lock();
-                return (*temp_src_node).name_.lock();
-            }
-
-            static const shared_ptr<const N> get_src_N_ptr_from_edge( const shared_ptr<Edge>& _edge ) const
-            {
-                std::cout << "get_src_N_ptr_from_edge() non const verison\n";
                 shared_ptr<Node> temp_src_node = (*_edge).src_.lock();
                 return (*temp_src_node).name_.lock();
             }
             
-            static shared_ptr<N> get_dest_N_ptr_from_edge( const shared_ptr<Edge>& _edge ) 
+            shared_ptr< N> get_src_N_ptr_from_edge( const shared_ptr<Edge>& _edge ) const
             {
-                std::cout << "get_dest_N_ptr_from_edge() non const verison\n";
+                shared_ptr<Node> temp_src_node = (*_edge).src_.lock();
+                return (*temp_src_node).name_.lock();
+            }
+
+            static const shared_ptr<const N> get_src_N_ptr_from_edge_static( const shared_ptr<Edge>& _edge )
+            {
+                shared_ptr<Node> temp_src_node = (*_edge).src_.lock();
+                return (*temp_src_node).name_.lock();
+            }
+            
+            shared_ptr<N> get_dest_N_ptr_from_edge( const shared_ptr<Edge>& _edge ) 
+            {
                 shared_ptr<Node> temp_dest_node = (*_edge).dest_.lock();
                 return (*temp_dest_node).name_.lock();
             }
 
-            static const shared_ptr<const N> get_dest_N_ptr_from_edge( const shared_ptr<Edge>& _edge ) const
+            shared_ptr< N> get_dest_N_ptr_from_edge( const shared_ptr<Edge>& _edge ) const
             {
-                std::cout << "get_dest_N_ptr_from_edge() const verison\n";
+                shared_ptr<Node> temp_dest_node = (*_edge).dest_.lock();
+                return (*temp_dest_node).name_.lock();
+            }
+
+            static const shared_ptr<const N> get_dest_N_ptr_from_edge_static( const shared_ptr<Edge>& _edge )
+            {
                 shared_ptr<Node> temp_dest_node = (*_edge).dest_.lock();
                 return (*temp_dest_node).name_.lock();
             }
@@ -941,17 +946,17 @@ namespace gdwg {
             /** 
              * Question, Do i pass reference or value
             */
-            const_iterator( typename gdwg::Graph<N,E>& _container,
-                            typename std::set< value_type >::const_iterator _curr,
-                            typename std::set< value_type >::const_iterator _end ) : container_{_container},
+            const_iterator( const typename gdwg::Graph<N,E>& _container,
+                            const typename std::set< value_type >::const_iterator _curr,
+                            const typename std::set< value_type >::const_iterator _end ) : container_{_container},
                                                                                     curr_{_curr}, 
                                                                                     end_{_end},
                                                                                     increment_{1} {}
 
-            const_iterator( typename gdwg::Graph<N,E>& _container,
-                            typename std::set< value_type >::const_iterator _curr,
-                            typename std::set< value_type >::const_iterator _end, 
-                            int _increment ) :   container_{_container},
+            const_iterator( const typename gdwg::Graph<N,E>& _container,
+                            const typename std::set< value_type >::const_iterator _curr,
+                            const typename std::set< value_type >::const_iterator _end, 
+                            const int& _increment ) :   container_{_container},
                                                 curr_{_curr}, 
                                                 end_{_end}, 
                                                 increment_{_increment} {}
@@ -1033,9 +1038,9 @@ namespace gdwg {
             friend bool operator!=(const const_iterator& _lhs, const const_iterator& _rhs) { return !(_lhs == _rhs); }
 
         private:
-            typename gdwg::Graph<N,E>& container_;
+            const typename gdwg::Graph<N,E>& container_;
             typename std::set< weak_ptr<Edge> >::const_iterator curr_ ;
-            typename std::set< weak_ptr<Edge> >::const_iterator end_ ;
+            const typename std::set< weak_ptr<Edge> >::const_iterator end_ ;
             int increment_;
     };
 
@@ -1053,17 +1058,17 @@ template<typename N, typename E>
             /** 
              * Question, Do i pass reference or value
             */
-            const_reverse_iterator( typename gdwg::Graph<N,E>& _container,
-                            typename std::set< value_type >::const_reverse_iterator _curr,
-                            typename std::set< value_type >::const_reverse_iterator _end ) : container_{_container},
+            const_reverse_iterator( const typename gdwg::Graph<N,E>& _container,
+                                    const typename std::set< value_type >::const_reverse_iterator _curr,
+                                    const typename std::set< value_type >::const_reverse_iterator _end ) : container_{_container},
                                                                                     curr_{_curr}, 
                                                                                     end_{_end},
                                                                                     increment_{1} {}
 
-            const_reverse_iterator( typename gdwg::Graph<N,E&> _container,
-                            typename std::set< value_type >::const_reverse_iterator _curr,
-                            typename std::set< value_type >::const_reverse_iterator _end, 
-                            int _increment ) :   container_{_container},
+            const_reverse_iterator( const typename gdwg::Graph<N,E&> _container,
+                                    const typename std::set< value_type >::const_reverse_iterator _curr,
+                                    const typename std::set< value_type >::const_reverse_iterator _end, 
+                                    const int& _increment ) :   container_{_container},
                                                 curr_{_curr}, 
                                                 end_{_end}, 
                                                 increment_{_increment} {}
@@ -1132,9 +1137,9 @@ template<typename N, typename E>
             friend bool operator!=(const const_reverse_iterator& _lhs, const const_reverse_iterator& _rhs) { return !(_lhs == _rhs); }
 
         private:
-            typename gdwg::Graph<N,E>& container_;
+            const typename gdwg::Graph<N,E>& container_;
             typename std::set< weak_ptr<Edge> >::const_reverse_iterator curr_ ;
-            typename std::set< weak_ptr<Edge> >::const_reverse_iterator end_ ;
+            const typename std::set< weak_ptr<Edge> >::const_reverse_iterator end_ ;
             int increment_;
     };
 
