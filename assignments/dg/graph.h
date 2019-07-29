@@ -659,14 +659,17 @@ namespace gdwg {
             {
                 return !(_lhs == _rhs );
             }
-
+            
             class const_iterator {
                 public:
                     typedef typename gdwg::Graph<N, E>::Edge Edge;
                     using iterator_category = std::bidirectional_iterator_tag;
-                    using value_type = weak_ptr<Edge>;
-                    using reference = weak_ptr<Edge>&;
-                    using pointer = weak_ptr<Edge>*; // Not strictly required, but nice to have.
+                    using value_type = std::tuple<N, N, E>;
+                    using reference = std::tuple<const N&, const N&, const E&>;
+                    /**
+                     * 
+                     */
+                    using pointer = std::tuple<const N*, const N*, const E*>; // Not strictly required, but nice to have.
                     using difference_type = int;    // used to calculate distance, can be negative
                                                     // std::ptrdiff_t
 
@@ -674,15 +677,15 @@ namespace gdwg {
                      * Question, Do i pass reference or value
                     */
                     const_iterator( const typename gdwg::Graph<N,E>& _container,
-                                    const typename std::set< value_type >::const_iterator _curr,
-                                    const typename std::set< value_type >::const_iterator _end ) : container_{_container},
+                                    const typename std::set< weak_ptr<Edge> >::const_iterator _curr,
+                                    const typename std::set< weak_ptr<Edge> >::const_iterator _end ) : container_{_container},
                                                                                             curr_{_curr}, 
                                                                                             end_{_end},
                                                                                             increment_{1} {}
 
                     const_iterator( const typename gdwg::Graph<N,E>& _container,
-                                    const typename std::set< value_type >::const_iterator _curr,
-                                    const typename std::set< value_type >::const_iterator _end, 
+                                    const typename std::set< weak_ptr<Edge> >::const_iterator _curr,
+                                    const typename std::set< weak_ptr<Edge> >::const_iterator _end, 
                                     const int& _increment ) :   container_{_container},
                                                         curr_{_curr}, 
                                                         end_{_end}, 
@@ -697,12 +700,25 @@ namespace gdwg {
 
                     reference operator*() const
                     {
-                        return *(this->curr_);
+                        shared_ptr<N> temp_src_node_name = this->container_.get_src_N_ptr_from_edge( (*(this->curr_)).lock() );
+                        N &temp_src = *temp_src_node_name;
+
+                        shared_ptr<N> temp_dest_node_name = this->container_.get_dest_N_ptr_from_edge( (*(this->curr_)).lock() );
+                        N &temp_dest = *temp_dest_node_name;
+
+                        E& temp_weight = this->container_.getWeight( (*(this->curr_)).lock() );
+                        return { temp_src, temp_dest, temp_weight };
                     }
 
                     value_type operator*()
                     {
-                        return *(this->curr_);
+                        /**
+                         *          &       
+                         */
+                        shared_ptr<N> temp_src_node_name = this->container_.get_src_N_ptr_from_edge( (*(this->curr_)).lock() );
+                        shared_ptr<N> temp_dest_node_name = this->container_.get_dest_N_ptr_from_edge( (*(this->curr_)).lock() );
+                        E temp_weight = this->container_.getWeight( (*(this->curr_)).lock() );
+                        return std::make_tuple( *temp_src_node_name, *temp_dest_node_name, temp_weight );
                     }
                     const_iterator& operator++()
                     {
@@ -865,6 +881,11 @@ namespace gdwg {
                     const typename std::set< weak_ptr<Edge> >::const_reverse_iterator end_ ;
                     int increment_;
             };
+
+            E& getWeight( shared_ptr<Edge> _edge )
+            {
+                return _edge->weight_;
+            }
 
         private:
             /**
