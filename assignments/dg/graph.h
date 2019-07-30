@@ -710,12 +710,16 @@ namespace gdwg {
                         return { temp_src, temp_dest, temp_weight };
                     }
 
-                    value_type operator*()
+                    value_type operator*() 
                     {
                         /**
                          *          &       
                          */
+                        std::cout << "called\n";
                         shared_ptr<N> temp_src_node_name = this->container_.get_src_N_ptr_from_edge( (*(this->curr_)).lock() );
+
+                        // shared_ptr<Node> temp_src_node = ((*(this->curr_)).lock())->src_.lock();
+                        // shared_ptr<N> temp_src_node_name = temp_src_node->name_.lock();
                         shared_ptr<N> temp_dest_node_name = this->container_.get_dest_N_ptr_from_edge( (*(this->curr_)).lock() );
                         E temp_weight = this->container_.getWeight( (*(this->curr_)).lock() );
                         return std::make_tuple( *temp_src_node_name, *temp_dest_node_name, temp_weight );
@@ -882,7 +886,7 @@ namespace gdwg {
                     int increment_;
             };
 
-            E& getWeight( shared_ptr<Edge> _edge )
+            E& getWeight( shared_ptr<Edge> _edge ) const
             {
                 return _edge->weight_;
             }
