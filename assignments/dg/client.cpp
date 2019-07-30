@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "assignments/dg/graph.h"
+#include "graph.h"
 
 // Note: At the moment, there is no client.sampleout. Please do your own testing
 
