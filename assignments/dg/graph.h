@@ -715,7 +715,6 @@ namespace gdwg {
                         /**
                          *          &       
                          */
-                        std::cout << "called\n";
                         shared_ptr<N> temp_src_node_name = this->container_.get_src_N_ptr_from_edge( (*(this->curr_)).lock() );
 
                         // shared_ptr<Node> temp_src_node = ((*(this->curr_)).lock())->src_.lock();
@@ -792,9 +791,9 @@ namespace gdwg {
                 public:
                     typedef typename gdwg::Graph<N, E>::Edge Edge;
                     using iterator_category = std::bidirectional_iterator_tag;
-                    using value_type = weak_ptr<Edge>;
-                    using reference = weak_ptr<Edge>&;
-                    using pointer = weak_ptr<Edge>*; // Not strictly required, but nice to have.
+                    using value_type = std::tuple<N, N, E>;
+                    using reference = std::tuple<const N&, const N&, const E&>;
+                    using pointer = std::tuple<const N*, const N*, const E*>; // Not strictly required, but nice to have.
                     using difference_type = int;    // used to calculate distance, can be negative
                                                     // std::ptrdiff_t
 
@@ -825,14 +824,28 @@ namespace gdwg {
 
                     reference operator*() const
                     {
-                        // std::cout << "deferencing pointer\n";
-                        return *curr_;
+                        shared_ptr<N> temp_src_node_name = this->container_.get_src_N_ptr_from_edge( (*(this->curr_)).lock() );
+                        N &temp_src = *temp_src_node_name;
+
+                        shared_ptr<N> temp_dest_node_name = this->container_.get_dest_N_ptr_from_edge( (*(this->curr_)).lock() );
+                        N &temp_dest = *temp_dest_node_name;
+
+                        E& temp_weight = this->container_.getWeight( (*(this->curr_)).lock() );
+                        return { temp_src, temp_dest, temp_weight };
                     }
 
                     value_type operator*() 
                     {
-                        // std::cout << "deferencing pointer\n";
-                        return *curr_;
+                        /**
+                         *          &       
+                         */
+                        shared_ptr<N> temp_src_node_name = this->container_.get_src_N_ptr_from_edge( (*(this->curr_)).lock() );
+
+                        // shared_ptr<Node> temp_src_node = ((*(this->curr_)).lock())->src_.lock();
+                        // shared_ptr<N> temp_src_node_name = temp_src_node->name_.lock();
+                        shared_ptr<N> temp_dest_node_name = this->container_.get_dest_N_ptr_from_edge( (*(this->curr_)).lock() );
+                        E temp_weight = this->container_.getWeight( (*(this->curr_)).lock() );
+                        return std::make_tuple( *temp_src_node_name, *temp_dest_node_name, temp_weight );
                     }
                     const_reverse_iterator& operator++()
                     {
@@ -887,6 +900,11 @@ namespace gdwg {
             };
 
             E& getWeight( shared_ptr<Edge> _edge ) const
+            {
+                return _edge->weight_;
+            }
+
+            E getWeight( shared_ptr<Edge> _edge )
             {
                 return _edge->weight_;
             }
