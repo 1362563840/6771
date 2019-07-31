@@ -31,6 +31,7 @@ namespace gdwg {
     template<typename N, typename E>
     class Graph {
             private:
+                struct EdgeComparator_shared;
                 struct Edge;
                 struct Node;
                 
@@ -120,7 +121,7 @@ namespace gdwg {
 
             Graph& operator=(const typename gdwg::Graph<N, E>& _rhs)
             {
-                std::cout << "copy assignment\n";
+                // std::cout << "copy assignment\n";
                 if (this == &_rhs) {
                     return *this;
                 }
@@ -132,7 +133,7 @@ namespace gdwg {
 
             Graph<N, E>& operator=(gdwg::Graph<N, E>&& _rhs) noexcept
             { 
-                std::cout << "move assignment\n";
+                // std::cout << "move assignment\n";
                 this->nodes_ = std::move(_rhs.nodes_);
                 this->edges_ = std::move(_rhs.edges_);
                 _rhs.nodes_.clear();
@@ -205,16 +206,19 @@ namespace gdwg {
                 // go through outcoming, delete each edge
                 // use reference
                 /**
+                 * Warning : when you iterator a set, you can not just delete element pointed by iteator in this set
                  * Question :
                  * if use reference here, temp_Node_ptr.outcoming.erase(self) will cause error or not???
                  */
+                std::set< shared_ptr<Edge>, EdgeComparator_shared > temp_back_up_outcoming;
                 for( auto it : (*temp_target_node).outcoming_ ) {
                     // access dest node, then delete this edge in tis incoming
                     shared_ptr<Node> temp_dest_node = (*it).dest_.lock();
                     // std::cout << "still have " << (*((*temp_dest_node).incoming_.find(it))).use_count() << std::endl;
                     (*temp_dest_node).incoming_.erase(it);
                     // std::cout << "still have " << (*((*temp_target_node).outcoming_.find(it))).use_count() << std::endl;
-                    (*temp_target_node).outcoming_.erase(it);
+                    // (*temp_target_node).outcoming_.erase(it);
+                    temp_back_up_outcoming.insert( it );
                     // debug test -------------------------------- delete
                     // if( (*(this->edges_.find(it))).use_count() != 1 ) {
                     //     std::cout << "still have " << (*(this->edges_.find(it))).use_count() << std::endl;
@@ -223,12 +227,18 @@ namespace gdwg {
                     // debug test -------------------------------- delete
                     this->edges_.erase(it);
                 }
-                std::cout << "-----------" << std::endl;
+                /**
+                 * Possible bug, use reference or copy
+                 */
+                for( auto& it : temp_back_up_outcoming ) {
+                    (*temp_target_node).outcoming_.erase( it );
+                }
+                temp_back_up_outcoming.clear();
                 // same thing for incoming_, but no need to delete in variable ""
                 for( auto it : (*temp_target_node).incoming_ ) {
                     shared_ptr<Node> temp_src_node = (*it).src_.lock();
                     (*temp_src_node).outcoming_.erase(it);
-                    (*temp_target_node).incoming_.erase(it);
+                    temp_back_up_outcoming.insert(it);
                     // debug test -------------------------------- delete
                     // because variable "it" is also shared_ptr
                     // if( (*(this->edges_.find(it))).use_count() != 1 ) {
@@ -237,6 +247,9 @@ namespace gdwg {
                     // }
                     // debug test -------------------------------- delete
                     this->edges_.erase(it);
+                }
+                for( auto& it : temp_back_up_outcoming ) {
+                    (*temp_target_node).incoming_.erase( it );
                 }
                 // last, delete node it self
                 this->nodes_.erase( temp_N_ptr );
@@ -430,9 +443,7 @@ namespace gdwg {
 
                     }
                     _out << ")" << "\n";
-
                 }
-                _out << "\n";
                 return _out;
             }
 
@@ -547,7 +558,7 @@ namespace gdwg {
                 shared_ptr<Node> temp_src_node = this->getNode( _src );
                 shared_ptr<Node> temp_dest_node = this->getNode( _dest );
                 /**
-                 * Attention, it relies on opeartor *
+                 * Attention, it relies on operator *
                  * You also need to delete edges in this->edges
                  */
                 (*temp_src_node).outcoming_.erase( (*it).lock() );
@@ -710,12 +721,15 @@ namespace gdwg {
                         return { temp_src, temp_dest, temp_weight };
                     }
 
-                    value_type operator*()
+                    value_type operator*() 
                     {
                         /**
                          *          &       
                          */
                         shared_ptr<N> temp_src_node_name = this->container_.get_src_N_ptr_from_edge( (*(this->curr_)).lock() );
+
+                        // shared_ptr<Node> temp_src_node = ((*(this->curr_)).lock())->src_.lock();
+                        // shared_ptr<N> temp_src_node_name = temp_src_node->name_.lock();
                         shared_ptr<N> temp_dest_node_name = this->container_.get_dest_N_ptr_from_edge( (*(this->curr_)).lock() );
                         E temp_weight = this->container_.getWeight( (*(this->curr_)).lock() );
                         return std::make_tuple( *temp_src_node_name, *temp_dest_node_name, temp_weight );
@@ -788,9 +802,9 @@ namespace gdwg {
                 public:
                     typedef typename gdwg::Graph<N, E>::Edge Edge;
                     using iterator_category = std::bidirectional_iterator_tag;
-                    using value_type = weak_ptr<Edge>;
-                    using reference = weak_ptr<Edge>&;
-                    using pointer = weak_ptr<Edge>*; // Not strictly required, but nice to have.
+                    using value_type = std::tuple<N, N, E>;
+                    using reference = std::tuple<const N&, const N&, const E&>;
+                    using pointer = std::tuple<const N*, const N*, const E*>; // Not strictly required, but nice to have.
                     using difference_type = int;    // used to calculate distance, can be negative
                                                     // std::ptrdiff_t
 
@@ -821,18 +835,31 @@ namespace gdwg {
 
                     reference operator*() const
                     {
-                        // std::cout << "deferencing pointer\n";
-                        return *curr_;
+                        shared_ptr<N> temp_src_node_name = this->container_.get_src_N_ptr_from_edge( (*(this->curr_)).lock() );
+                        N &temp_src = *temp_src_node_name;
+
+                        shared_ptr<N> temp_dest_node_name = this->container_.get_dest_N_ptr_from_edge( (*(this->curr_)).lock() );
+                        N &temp_dest = *temp_dest_node_name;
+
+                        E& temp_weight = this->container_.getWeight( (*(this->curr_)).lock() );
+                        return { temp_src, temp_dest, temp_weight };
                     }
 
                     value_type operator*() 
                     {
-                        // std::cout << "deferencing pointer\n";
-                        return *curr_;
+                        /**
+                         *          &       
+                         */
+                        shared_ptr<N> temp_src_node_name = this->container_.get_src_N_ptr_from_edge( (*(this->curr_)).lock() );
+
+                        // shared_ptr<Node> temp_src_node = ((*(this->curr_)).lock())->src_.lock();
+                        // shared_ptr<N> temp_src_node_name = temp_src_node->name_.lock();
+                        shared_ptr<N> temp_dest_node_name = this->container_.get_dest_N_ptr_from_edge( (*(this->curr_)).lock() );
+                        E temp_weight = this->container_.getWeight( (*(this->curr_)).lock() );
+                        return std::make_tuple( *temp_src_node_name, *temp_dest_node_name, temp_weight );
                     }
                     const_reverse_iterator& operator++()
                     {
-                        std::cout << "what is wrong\n";
                         ++this->curr_;
                         return *this;
                     }
@@ -882,7 +909,12 @@ namespace gdwg {
                     int increment_;
             };
 
-            E& getWeight( shared_ptr<Edge> _edge )
+            E& getWeight( shared_ptr<Edge> _edge ) const
+            {
+                return _edge->weight_;
+            }
+
+            E getWeight( shared_ptr<Edge> _edge )
             {
                 return _edge->weight_;
             }
@@ -982,7 +1014,7 @@ namespace gdwg {
              */
             typedef struct Edge
             {
-                Edge( const shared_ptr< Node>& _src, const shared_ptr< Node>& _dest, const E& _weight ) : src_{_src}, dest_{_dest}, weight_{_weight} {std::cout << "called\n";}
+                Edge( const shared_ptr< Node>& _src, const shared_ptr< Node>& _dest, const E& _weight ) : src_{_src}, dest_{_dest}, weight_{_weight} {}
 
                 std::weak_ptr<Node> src_;
                 std::weak_ptr<Node> dest_;
@@ -999,7 +1031,6 @@ namespace gdwg {
              */
              shared_ptr<  Node> getNode( const N& _val ) const
             {
-                std::cout << "getNode() const version\n";
                 shared_ptr<N> temp_N_ptr = make_shared<N>( _val );
                 // debug test ---------------------------- delete
                 if( this->nodes_.find(temp_N_ptr) == this->nodes_.end() ) {
@@ -1015,7 +1046,6 @@ namespace gdwg {
              */
             shared_ptr<Node> getNode( const N& _val ) 
             {
-                std::cout << "getNode() non const version\n";
                 shared_ptr<N> temp_N_ptr = make_shared<N>( _val );
                 // debug test ---------------------------- delete
                 if( this->nodes_.find(temp_N_ptr) == this->nodes_.end() ) {
@@ -1059,7 +1089,6 @@ namespace gdwg {
              */
             shared_ptr<Edge> makeEdge( const N& _src, const N& _dest, const E& _w ) 
             {
-                std::cout << "makeEdge() non const version\n";
                 shared_ptr< Node> temp_src = getNode(_src);
                 shared_ptr< Node> temp_dest = getNode(_dest);
 
@@ -1069,7 +1098,6 @@ namespace gdwg {
 
             shared_ptr<Edge> makeEdge( const N& _src, const N& _dest, const E& _w ) const
             {
-                std::cout << "makeEdge() const version\n";
                 shared_ptr< Node> temp_src = getNode(_src);
                 shared_ptr< Node> temp_dest = getNode(_dest);
                 /**
