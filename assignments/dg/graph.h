@@ -31,6 +31,7 @@ namespace gdwg {
     template<typename N, typename E>
     class Graph {
             private:
+                struct EdgeComparator_shared;
                 struct Edge;
                 struct Node;
                 
@@ -205,16 +206,19 @@ namespace gdwg {
                 // go through outcoming, delete each edge
                 // use reference
                 /**
+                 * Warning : when you iterator a set, you can not just delete element pointed by iteator in this set
                  * Question :
                  * if use reference here, temp_Node_ptr.outcoming.erase(self) will cause error or not???
                  */
+                std::set< shared_ptr<Edge>, EdgeComparator_shared > temp_back_up_outcoming;
                 for( auto it : (*temp_target_node).outcoming_ ) {
                     // access dest node, then delete this edge in tis incoming
                     shared_ptr<Node> temp_dest_node = (*it).dest_.lock();
                     // std::cout << "still have " << (*((*temp_dest_node).incoming_.find(it))).use_count() << std::endl;
                     (*temp_dest_node).incoming_.erase(it);
                     // std::cout << "still have " << (*((*temp_target_node).outcoming_.find(it))).use_count() << std::endl;
-                    (*temp_target_node).outcoming_.erase(it);
+                    // (*temp_target_node).outcoming_.erase(it);
+                    temp_back_up_outcoming.insert( it );
                     // debug test -------------------------------- delete
                     // if( (*(this->edges_.find(it))).use_count() != 1 ) {
                     //     std::cout << "still have " << (*(this->edges_.find(it))).use_count() << std::endl;
@@ -223,12 +227,19 @@ namespace gdwg {
                     // debug test -------------------------------- delete
                     this->edges_.erase(it);
                 }
+                /**
+                 * Possible bug, use reference or copy
+                 */
+                for( auto& it : temp_back_up_outcoming ) {
+                    (*temp_target_node).outcoming_.erase( it );
+                }
+                temp_back_up_outcoming.clear();
                 std::cout << "-----------" << std::endl;
                 // same thing for incoming_, but no need to delete in variable ""
                 for( auto it : (*temp_target_node).incoming_ ) {
                     shared_ptr<Node> temp_src_node = (*it).src_.lock();
                     (*temp_src_node).outcoming_.erase(it);
-                    (*temp_target_node).incoming_.erase(it);
+                    temp_back_up_outcoming.insert(it);
                     // debug test -------------------------------- delete
                     // because variable "it" is also shared_ptr
                     // if( (*(this->edges_.find(it))).use_count() != 1 ) {
@@ -237,6 +248,9 @@ namespace gdwg {
                     // }
                     // debug test -------------------------------- delete
                     this->edges_.erase(it);
+                }
+                for( auto& it : temp_back_up_outcoming ) {
+                    (*temp_target_node).incoming_.erase( it );
                 }
                 // last, delete node it self
                 this->nodes_.erase( temp_N_ptr );
@@ -290,6 +304,7 @@ namespace gdwg {
 
             void MergeReplace(const N& _oldData, const N& _newData)
             {
+                std::cout << "here 1\n";
                 if( this->IsNode( _oldData ) == false ) {
                     stringstream ss;
                     ss << "Cannot call Graph::MergeReplace on old or new data if they don't exist in the graph";
