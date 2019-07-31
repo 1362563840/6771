@@ -25,35 +25,37 @@ int main() {
 
   auto e4 = std::make_tuple(s4, s3, 2.8);
 
-  auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e1_1, e1_2, e1_3, e1_4 e2, e2_1, e3, e4};
+  auto e = std::vector<std::tuple<std::string, std::string, double>>{
+      e1, e1_1, e1_2, e1_3, e1_4 e2, e2_1, e3, e4};
   const gdwg::Graph<std::string, double> g{e.begin(), e.end()};
 
   std::cout << g;
 
-  const std::vector<double> v1 = g.GetWeights("hello","how");
-  for( auto& it : v1 ) {
+  const std::vector<double> v1 = g.GetWeights("hello", "how");
+  for (auto &it : v1) {
     std::cout << it << std::endl;
   }
 
-//  const std::vector<std::string> v1 = g.GetConnected("hello");
-//
-//  for( auto& it : v1 ) {
-//    std::cout << it << std::endl;
-//  }
+  //  const std::vector<std::string> v1 = g.GetConnected("hello");
+  //
+  //  for( auto& it : v1 ) {
+  //    std::cout << it << std::endl;
+  //  }
 
-//  const std::vector<std::string> v1 = g.GetNodes();
-//
-//  for( auto& it : v1 ) {
-//    std::cout << it << std::endl;
-//  }
+  //  const std::vector<std::string> v1 = g.GetNodes();
+  //
+  //  for( auto& it : v1 ) {
+  //    std::cout << it << std::endl;
+  //  }
 
-//  std::cout << " connected >>> " << g.IsConnected("are", "fine") << std::endl;
+  //  std::cout << " connected >>> " << g.IsConnected("are", "fine") <<
+  //  std::endl;
   return 0;
 }
 
 int main() {
   std::vector<std::string> v{"hello", "how", "are", "you"};
-  gdwg::Graph<std::string, double> g{v.begin(),v.end()};
+  gdwg::Graph<std::string, double> g{v.begin(), v.end()};
   g.InsertEdge("hello", "how", 5);
   g.InsertEdge("hello", "are", 8);
   g.InsertEdge("hello", "are", 2);
@@ -82,7 +84,8 @@ int main() {
   auto e5 = std::make_tuple(s3_1, s1, 7.7);
   auto e6 = std::make_tuple(s3_1, s4, 7.7);
 
-  auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3, e4, e5, e6};
+  auto e = std::vector<std::tuple<std::string, std::string, double>>{
+      e1, e2, e3, e4, e5, e6};
   gdwg::Graph<std::string, double> g{e.begin(), e.end()};
   std::cout << g;
   return 0;
@@ -95,4 +98,5 @@ int main() {
   std::cout << g;
   return 0;
 }
-std::set<std::weak_ptr<gdwg::Graph<std::__cxx11::basic_string<a>, int>::Edge>, b,a > >::const_iterator&
+std::set<std::weak_ptr<gdwg::Graph<std::__cxx11::basic_string<a>, int>::Edge>,
+         b, a>> ::const_iterator &

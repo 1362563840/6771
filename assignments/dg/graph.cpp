@@ -9,11 +9,9 @@
 #include <unordered_set>
 #include <vector>
 
-using std::cout
-using std::set;
+using std::cout using std::set;
 using std::shared_ptr;
 using std::string;
 using std::unordered_set;
 using std::vector;
 using std::weak_ptr;
-
