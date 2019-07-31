@@ -641,24 +641,24 @@ namespace gdwg {
                 auto lhs_edge_it = _lhs.edges_.cbegin();
                 auto rhs_edge_it = _rhs.edges_.cbegin();
                 for( ; lhs_edge_it != _lhs.edges_.cend() ; lhs_edge_it++, rhs_edge_it++  ) {
-                    // shared_ptr<N> temp_lhs_src_node_name = _lhs.get_src_N_ptr_from_edge( (*lhs_edge_it).lock() );
-                    shared_ptr<Node> temp_lhs_src_node =  (*lhs_edge_it).lock()->src_.lock();
-                    shared_ptr<N> temp_lhs_src_node_name =  temp_lhs_src_node->name_.lock();
-                    // shared_ptr<N> temp_rhs_src_node_name = _rhs.get_src_N_ptr_from_edge( (*rhs_edge_it).lock() );
-                    shared_ptr<Node> temp_rhs_src_node =  (*rhs_edge_it).lock()->src_.lock();
-                    shared_ptr<N> temp_rhs_src_node_name =  temp_rhs_src_node->name_.lock();
+                    shared_ptr<N> temp_lhs_src_node_name = _lhs.get_src_N_ptr_from_edge( (*lhs_edge_it).lock() );
+                    // shared_ptr<Node> temp_lhs_src_node =  (*lhs_edge_it).lock()->src_.lock();
+                    // shared_ptr<N> temp_lhs_src_node_name =  temp_lhs_src_node->name_.lock();
+                    shared_ptr<N> temp_rhs_src_node_name = _rhs.get_src_N_ptr_from_edge( (*rhs_edge_it).lock() );
+                    // shared_ptr<Node> temp_rhs_src_node =  (*rhs_edge_it).lock()->src_.lock();
+                    // shared_ptr<N> temp_rhs_src_node_name =  temp_rhs_src_node->name_.lock();
                     if( *temp_lhs_src_node_name != *temp_rhs_src_node_name || 
                                             (*lhs_edge_it).lock()->weight_ != (*rhs_edge_it).lock()->weight_ ) {
                         return false;
                     }
 
-                    // shared_ptr<N> temp_lhs_dest_node_name = _lhs.get_dest_N_ptr_from_edge( (*lhs_edge_it).lock() );
-                    // shared_ptr<N> temp_rhs_dest_node_name = _rhs.get_dest_N_ptr_from_edge( (*rhs_edge_it).lock() );
-                    shared_ptr<Node> temp_lhs_dest_node =  (*lhs_edge_it).lock()->dest_.lock();
-                    shared_ptr<N> temp_lhs_dest_node_name =  temp_lhs_dest_node->name_.lock();
+                    shared_ptr<N> temp_lhs_dest_node_name = _lhs.get_dest_N_ptr_from_edge( (*lhs_edge_it).lock() );
+                    shared_ptr<N> temp_rhs_dest_node_name = _rhs.get_dest_N_ptr_from_edge( (*rhs_edge_it).lock() );
+                    // shared_ptr<Node> temp_lhs_dest_node =  (*lhs_edge_it).lock()->dest_.lock();
+                    // shared_ptr<N> temp_lhs_dest_node_name =  temp_lhs_dest_node->name_.lock();
 
-                    shared_ptr<Node> temp_rhs_dest_node =  (*rhs_edge_it).lock()->dest_.lock();
-                    shared_ptr<N> temp_rhs_dest_node_name =  temp_rhs_dest_node->name_.lock();
+                    // shared_ptr<Node> temp_rhs_dest_node =  (*rhs_edge_it).lock()->dest_.lock();
+                    // shared_ptr<N> temp_rhs_dest_node_name =  temp_rhs_dest_node->name_.lock();
                     if( *temp_lhs_dest_node_name != *temp_rhs_dest_node_name ) {
                         return false;
                     }
