@@ -121,7 +121,7 @@ namespace gdwg {
 
             Graph& operator=(const typename gdwg::Graph<N, E>& _rhs)
             {
-                std::cout << "copy assignment\n";
+                // std::cout << "copy assignment\n";
                 if (this == &_rhs) {
                     return *this;
                 }
@@ -133,7 +133,7 @@ namespace gdwg {
 
             Graph<N, E>& operator=(gdwg::Graph<N, E>&& _rhs) noexcept
             { 
-                std::cout << "move assignment\n";
+                // std::cout << "move assignment\n";
                 this->nodes_ = std::move(_rhs.nodes_);
                 this->edges_ = std::move(_rhs.edges_);
                 _rhs.nodes_.clear();
@@ -234,7 +234,6 @@ namespace gdwg {
                     (*temp_target_node).outcoming_.erase( it );
                 }
                 temp_back_up_outcoming.clear();
-                std::cout << "-----------" << std::endl;
                 // same thing for incoming_, but no need to delete in variable ""
                 for( auto it : (*temp_target_node).incoming_ ) {
                     shared_ptr<Node> temp_src_node = (*it).src_.lock();
@@ -304,7 +303,6 @@ namespace gdwg {
 
             void MergeReplace(const N& _oldData, const N& _newData)
             {
-                std::cout << "here 1\n";
                 if( this->IsNode( _oldData ) == false ) {
                     stringstream ss;
                     ss << "Cannot call Graph::MergeReplace on old or new data if they don't exist in the graph";
@@ -445,9 +443,7 @@ namespace gdwg {
 
                     }
                     _out << ")" << "\n";
-
                 }
-                _out << "\n";
                 return _out;
             }
 
@@ -562,7 +558,7 @@ namespace gdwg {
                 shared_ptr<Node> temp_src_node = this->getNode( _src );
                 shared_ptr<Node> temp_dest_node = this->getNode( _dest );
                 /**
-                 * Attention, it relies on opeartor *
+                 * Attention, it relies on operator *
                  * You also need to delete edges in this->edges
                  */
                 (*temp_src_node).outcoming_.erase( (*it).lock() );
@@ -864,7 +860,6 @@ namespace gdwg {
                     }
                     const_reverse_iterator& operator++()
                     {
-                        std::cout << "what is wrong\n";
                         ++this->curr_;
                         return *this;
                     }
@@ -1019,7 +1014,7 @@ namespace gdwg {
              */
             typedef struct Edge
             {
-                Edge( const shared_ptr< Node>& _src, const shared_ptr< Node>& _dest, const E& _weight ) : src_{_src}, dest_{_dest}, weight_{_weight} {std::cout << "called\n";}
+                Edge( const shared_ptr< Node>& _src, const shared_ptr< Node>& _dest, const E& _weight ) : src_{_src}, dest_{_dest}, weight_{_weight} {}
 
                 std::weak_ptr<Node> src_;
                 std::weak_ptr<Node> dest_;
@@ -1036,7 +1031,6 @@ namespace gdwg {
              */
              shared_ptr<  Node> getNode( const N& _val ) const
             {
-                std::cout << "getNode() const version\n";
                 shared_ptr<N> temp_N_ptr = make_shared<N>( _val );
                 // debug test ---------------------------- delete
                 if( this->nodes_.find(temp_N_ptr) == this->nodes_.end() ) {
@@ -1052,7 +1046,6 @@ namespace gdwg {
              */
             shared_ptr<Node> getNode( const N& _val ) 
             {
-                std::cout << "getNode() non const version\n";
                 shared_ptr<N> temp_N_ptr = make_shared<N>( _val );
                 // debug test ---------------------------- delete
                 if( this->nodes_.find(temp_N_ptr) == this->nodes_.end() ) {
@@ -1096,7 +1089,6 @@ namespace gdwg {
              */
             shared_ptr<Edge> makeEdge( const N& _src, const N& _dest, const E& _w ) 
             {
-                std::cout << "makeEdge() non const version\n";
                 shared_ptr< Node> temp_src = getNode(_src);
                 shared_ptr< Node> temp_dest = getNode(_dest);
 
@@ -1106,7 +1098,6 @@ namespace gdwg {
 
             shared_ptr<Edge> makeEdge( const N& _src, const N& _dest, const E& _w ) const
             {
-                std::cout << "makeEdge() const version\n";
                 shared_ptr< Node> temp_src = getNode(_src);
                 shared_ptr< Node> temp_dest = getNode(_dest);
                 /**
