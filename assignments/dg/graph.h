@@ -43,9 +43,6 @@ class Graph {
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = std::tuple<N, N, E>;
     using reference = std::tuple<const N&, const N&, const E&>;
-    using pointer = std::tuple<const N*,
-                               const N*,
-                               const E*>;  // Not strictly required, but nice to have.
     using difference_type = int;
 
     const_iterator(const typename gdwg::Graph<N, E>& container,
@@ -106,8 +103,6 @@ class Graph {
       return temp;
     }
 
-    pointer operator->() const { return &(this->operator*()); }
-
     friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) {
       if (&(lhs.container_) != &(rhs.container_)) {
         return false;
@@ -136,9 +131,6 @@ class Graph {
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = std::tuple<N, N, E>;
     using reference = std::tuple<const N&, const N&, const E&>;
-    using pointer = std::tuple<const N*,
-                               const N*,
-                               const E*>;  // Not strictly required, but nice to have.
     using difference_type = int;
 
     const_reverse_iterator(const typename gdwg::Graph<N, E>& container,
@@ -199,8 +191,6 @@ class Graph {
       --(*this);
       return temp;
     }
-
-    pointer operator->() const { return &(this->operator*()); }
 
     friend bool operator==(const const_reverse_iterator& lhs, const const_reverse_iterator& rhs) {
       if (&(lhs.container_) != &(rhs.container_)) {
