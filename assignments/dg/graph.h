@@ -89,7 +89,8 @@ class Graph {
       --this->curr_;
       return *this;
     }
-    const_iterator& operator--(int) {
+
+    const_iterator operator--(int) {
       const_iterator temp{*this};
       --(*this);
       return temp;
@@ -130,15 +131,17 @@ class Graph {
                                const E*>;  // Not strictly required, but nice to have.
     using difference_type = int;
 
-    const_reverse_iterator(const typename gdwg::Graph<N, E>& container,
-                           const typename std::set<value_type>::const_reverse_iterator curr,
-                           const typename std::set<value_type>::const_reverse_iterator end)
+    const_reverse_iterator(
+        const typename gdwg::Graph<N, E>& container,
+        const typename std::set<std::weak_ptr<Edge>>::const_reverse_iterator curr,
+        const typename std::set<std::weak_ptr<Edge>>::const_reverse_iterator end)
       : container_{container}, curr_{curr}, end_{end}, increment_{1} {}
 
-    const_reverse_iterator(const typename gdwg::Graph<N, E&> container,
-                           const typename std::set<value_type>::const_reverse_iterator curr,
-                           const typename std::set<value_type>::const_reverse_iterator end,
-                           const int& increment)
+    const_reverse_iterator(
+        const typename gdwg::Graph<N, E&> container,
+        const typename std::set<std::weak_ptr<Edge>>::const_reverse_iterator curr,
+        const typename std::set<std::weak_ptr<Edge>>::const_reverse_iterator end,
+        const int& increment)
       : container_{container}, curr_{curr}, end_{end}, increment_{increment} {}
 
     const_reverse_iterator(const const_reverse_iterator& another)
@@ -183,7 +186,7 @@ class Graph {
       return *this;
     }
 
-    const_reverse_iterator& operator--(int) {
+    const_reverse_iterator operator--(int) {
       const_reverse_iterator temp{*this};
       --(*this);
       return temp;
@@ -206,6 +209,7 @@ class Graph {
     }
 
    private:
+    friend class Graph;
     const typename gdwg::Graph<N, E>& container_;
     typename std::set<std::weak_ptr<Edge>>::const_reverse_iterator curr_;
     const typename std::set<std::weak_ptr<Edge>>::const_reverse_iterator end_;
