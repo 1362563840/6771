@@ -51,7 +51,7 @@ gdwg::Graph<N, E>::Graph(const typename gdwg::Graph<N, E>& graph) {
 }
 
 template <typename N, typename E>
-gdwg::Graph<N, E>::Graph(const typename gdwg::Graph<N, E>&& other) noexcept
+gdwg::Graph<N, E>::Graph(typename gdwg::Graph<N, E>&& other)
   : nodes_{other.nodes_}, edges_{other.edges_} {
   other.nodes_.clear();
   other.edges_.clear();
@@ -226,7 +226,8 @@ bool gdwg::Graph<N, E>::IsConnected(const N& src, const N& dest) const {
   }
   if (this->IsNode(dest) == false) {
     std::stringstream ss;
-    ss << "If either node cannot be found in the graph";
+    ss << "Cannot call Graph::IsConnected if src or dst node don't exist in "
+          "the graph";
     throw std::runtime_error(ss.str());
   }
   const std::shared_ptr<const Node> temp_src_node = this->getNode(src);
@@ -269,6 +270,12 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) const {
 template <typename N, typename E>
 std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dest) const {
   if (this->IsNode(src) == false) {
+    std::stringstream ss;
+    ss << "Cannot call Graph::GetWeights if src or dst node don't exist in "
+          "the graph";
+    throw std::runtime_error(ss.str());
+  }
+  if (this->IsNode(dest) == false) {
     std::stringstream ss;
     ss << "Cannot call Graph::GetWeights if src or dst node don't exist in "
           "the graph";
