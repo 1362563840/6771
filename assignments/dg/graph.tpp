@@ -1,3 +1,10 @@
+#include <algorithm>
+#include <memory>
+#include <set>
+#include <tuple>
+#include <utility>
+#include <vector>
+
 template <typename N, typename E>
 gdwg::Graph<N, E>::Graph(typename std::vector<N>::const_iterator start,
                          typename std::vector<N>::const_iterator end) {
@@ -28,15 +35,15 @@ gdwg::Graph<N, E>::Graph(const typename std::initializer_list<N> list) {
 template <typename N, typename E>
 gdwg::Graph<N, E>::Graph(const typename gdwg::Graph<N, E>& graph) {
   for (auto& it : graph.nodes_) {
-    shared_ptr<N> temp_N_ptr = make_shared<N>(*(it.first));
-    shared_ptr<Node> temp_Node_ptr = make_shared<Node>(temp_N_ptr);
+    std::shared_ptr<N> temp_N_ptr = std::make_shared<N>(*(it.first));
+    std::shared_ptr<Node> temp_Node_ptr = std::make_shared<Node>(temp_N_ptr);
     this->nodes_.emplace(temp_N_ptr, temp_Node_ptr);
   }
 
   for (auto& it : graph.edges_) {
-    shared_ptr<Edge> new_edge = copyEdge(it.lock());
-    shared_ptr<Node> temp_src_node = getNodePassedByNode((*new_edge).src_.lock());
-    shared_ptr<Node> temp_dest_node = getNodePassedByNode((*new_edge).dest_.lock());
+    std::shared_ptr<Edge> new_edge = copyEdge(it.lock());
+    std::shared_ptr<Node> temp_src_node = getNodePassedByNode((*new_edge).src_.lock());
+    std::shared_ptr<Node> temp_dest_node = getNodePassedByNode((*new_edge).dest_.lock());
     (*temp_src_node).outgoing_.insert(new_edge);
     (*temp_dest_node).incoming_.insert(new_edge);
     this->edges_.insert(new_edge);
@@ -45,7 +52,10 @@ gdwg::Graph<N, E>::Graph(const typename gdwg::Graph<N, E>& graph) {
 
 template <typename N, typename E>
 gdwg::Graph<N, E>::Graph(const typename gdwg::Graph<N, E>&& other) noexcept
-  : nodes_{other.nodes_}, edges_{other.edges_} {}
+  : nodes_{other.nodes_}, edges_{other.edges_} {
+  other.nodes_.clear();
+  other.edges_.clear();
+}
 
 template <typename N, typename E>
 gdwg::Graph<N, E>& gdwg::Graph<N, E>::operator=(const typename gdwg::Graph<N, E>& rhs) {
@@ -72,8 +82,8 @@ bool gdwg::Graph<N, E>::InsertNode(const N& val) {
   if (this->IsNode(val) == true) {
     return false;
   }
-  shared_ptr<N> temp_N_ptr = make_shared<N>(val);
-  shared_ptr<Node> temp_Node_ptr = make_shared<Node>(temp_N_ptr);
+  std::shared_ptr<N> temp_N_ptr = std::make_shared<N>(val);
+  std::shared_ptr<Node> temp_Node_ptr = std::make_shared<Node>(temp_N_ptr);
   this->nodes_.emplace(temp_N_ptr, temp_Node_ptr);
   return true;
 }
@@ -81,17 +91,17 @@ bool gdwg::Graph<N, E>::InsertNode(const N& val) {
 template <typename N, typename E>
 bool gdwg::Graph<N, E>::InsertEdge(const N& src, const N& dest, const E& w) {
   if (this->IsNode(src) == false || this->IsNode(dest) == false) {
-    stringstream ss;
+    std::stringstream ss;
     ss << "Cannot call Graph::InsertEdge when either src or dst node does "
           "not exist";
     throw std::runtime_error(ss.str());
   }
-  shared_ptr<Edge> temp_edge = makeEdge(src, dest, w);
+  std::shared_ptr<Edge> temp_edge = makeEdge(src, dest, w);
   if (this->edges_.find(temp_edge) != this->edges_.end()) {
     return false;
   }
-  shared_ptr<Node> temp_src_node = this->getNode(src);
-  shared_ptr<Node> temp_dest_node = this->getNode(dest);
+  std::shared_ptr<Node> temp_src_node = this->getNode(src);
+  std::shared_ptr<Node> temp_dest_node = this->getNode(dest);
   (*temp_src_node).outgoing_.insert(temp_edge);
   (*temp_dest_node).incoming_.insert(temp_edge);
   this->edges_.insert(temp_edge);
@@ -103,11 +113,11 @@ bool gdwg::Graph<N, E>::DeleteNode(const N& val) {
   if (this->IsNode(val) == false) {
     return false;
   }
-  shared_ptr<N> temp_N_ptr = make_shared<N>(val);
-  shared_ptr<Node> temp_target_node = this->nodes_.find(temp_N_ptr)->second;
-  std::set<shared_ptr<Edge>, EdgeComparator_shared> temp_back_up_outgoing;
+  std::shared_ptr<N> temp_N_ptr = std::make_shared<N>(val);
+  std::shared_ptr<Node> temp_target_node = this->nodes_.find(temp_N_ptr)->second;
+  std::set<std::shared_ptr<Edge>, EdgeComparator_shared> temp_back_up_outgoing;
   for (auto it : (*temp_target_node).outgoing_) {
-    shared_ptr<Node> temp_dest_node = (*it).dest_.lock();
+    std::shared_ptr<Node> temp_dest_node = (*it).dest_.lock();
     (*temp_dest_node).incoming_.erase(it);
     temp_back_up_outgoing.insert(it);
     this->edges_.erase(it);
@@ -117,7 +127,7 @@ bool gdwg::Graph<N, E>::DeleteNode(const N& val) {
   }
   temp_back_up_outgoing.clear();
   for (auto it : (*temp_target_node).incoming_) {
-    shared_ptr<Node> temp_src_node = (*it).src_.lock();
+    std::shared_ptr<Node> temp_src_node = (*it).src_.lock();
     (*temp_src_node).outgoing_.erase(it);
     temp_back_up_outgoing.insert(it);
     this->edges_.erase(it);
@@ -132,16 +142,16 @@ bool gdwg::Graph<N, E>::DeleteNode(const N& val) {
 template <typename N, typename E>
 bool gdwg::Graph<N, E>::Replace(const N& oldData, const N& newData) {
   if (this->IsNode(oldData) == false) {
-    stringstream ss;
+    std::stringstream ss;
     ss << "Cannot call Graph::Replace on a node that doesn't exist";
     throw std::runtime_error(ss.str());
   }
   if (this->IsNode(newData) == true) {
     return false;
   }
-  shared_ptr<Node> temp_old_node = this->getNode(oldData);
-  set<shared_ptr<Edge>> backup_outgoing;
-  set<shared_ptr<Edge>> backup_incoming;
+  std::shared_ptr<Node> temp_old_node = this->getNode(oldData);
+  std::set<std::shared_ptr<Edge>> backup_outgoing;
+  std::set<std::shared_ptr<Edge>> backup_incoming;
   for (auto& it : (*temp_old_node).outgoing_) {
     backup_outgoing.insert(it);
   }
@@ -162,20 +172,20 @@ bool gdwg::Graph<N, E>::Replace(const N& oldData, const N& newData) {
 template <typename N, typename E>
 void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
   if (this->IsNode(oldData) == false) {
-    stringstream ss;
+    std::stringstream ss;
     ss << "Cannot call Graph::MergeReplace on old or new data if they don't "
           "exist in the graph";
     throw std::runtime_error(ss.str());
   }
   if (this->IsNode(newData) == false) {
-    stringstream ss;
+    std::stringstream ss;
     ss << "Cannot call Graph::MergeReplace on old or new data if they don't "
           "exist in the graph";
     throw std::runtime_error(ss.str());
   }
-  shared_ptr<Node> temp_old_node = this->getNode(oldData);
-  set<shared_ptr<Edge>> backup_outgoing;
-  set<shared_ptr<Edge>> backup_incoming;
+  std::shared_ptr<Node> temp_old_node = this->getNode(oldData);
+  std::set<std::shared_ptr<Edge>> backup_outgoing;
+  std::set<std::shared_ptr<Edge>> backup_incoming;
   for (auto& it : (*temp_old_node).outgoing_) {
     backup_outgoing.insert(it);
   }
@@ -199,7 +209,7 @@ void gdwg::Graph<N, E>::Clear() {
 
 template <typename N, typename E>
 bool gdwg::Graph<N, E>::IsNode(const N& val) const {
-  shared_ptr<N> temp_N_ptr = make_shared<N>(val);
+  std::shared_ptr<N> temp_N_ptr = std::make_shared<N>(val);
   if (this->nodes_.find(temp_N_ptr) != this->nodes_.end()) {
     return true;
   }
@@ -209,19 +219,19 @@ bool gdwg::Graph<N, E>::IsNode(const N& val) const {
 template <typename N, typename E>
 bool gdwg::Graph<N, E>::IsConnected(const N& src, const N& dest) const {
   if (this->IsNode(src) == false) {
-    stringstream ss;
+    std::stringstream ss;
     ss << "Cannot call Graph::IsConnected if src or dst node don't exist in "
           "the graph";
     throw std::runtime_error(ss.str());
   }
   if (this->IsNode(dest) == false) {
-    stringstream ss;
+    std::stringstream ss;
     ss << "If either node cannot be found in the graph";
     throw std::runtime_error(ss.str());
   }
-  const shared_ptr<const Node> temp_src_node = this->getNode(src);
+  const std::shared_ptr<const Node> temp_src_node = this->getNode(src);
   for (auto& it : (*temp_src_node).outgoing_) {
-    const shared_ptr<const N> temp_dest_node_name = this->get_dest_N_ptr_from_edge(it);
+    const std::shared_ptr<const N> temp_dest_node_name = this->get_dest_N_ptr_from_edge(it);
     if (*temp_dest_node_name == dest) {
       return true;
     }
@@ -231,7 +241,7 @@ bool gdwg::Graph<N, E>::IsConnected(const N& src, const N& dest) const {
 
 template <typename N, typename E>
 std::vector<N> gdwg::Graph<N, E>::GetNodes() const {
-  vector<N> result;
+  std::vector<N> result;
   for (auto& it : this->nodes_) {
     result.push_back(*(it.first));
   }
@@ -241,17 +251,17 @@ std::vector<N> gdwg::Graph<N, E>::GetNodes() const {
 template <typename N, typename E>
 std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) const {
   if (this->IsNode(src) == false) {
-    stringstream ss;
+    std::stringstream ss;
     ss << "Cannot call Graph::GetConnected if src doesn't exist in the graph";
     throw std::runtime_error(ss.str());
   }
-  set<N> temp;
-  const shared_ptr<const Node> temp_src_node = this->getNode(src);
+  std::set<N> temp;
+  const std::shared_ptr<const Node> temp_src_node = this->getNode(src);
   for (auto& it : (*temp_src_node).outgoing_) {
-    const shared_ptr<const N> temp_dest_node_name = this->get_dest_N_ptr_from_edge(it);
+    const std::shared_ptr<const N> temp_dest_node_name = this->get_dest_N_ptr_from_edge(it);
     temp.insert(*temp_dest_node_name);
   }
-  vector<N> result;
+  std::vector<N> result;
   std::copy(temp.cbegin(), temp.cend(), std::back_inserter(result));
   return result;
 }
@@ -259,15 +269,15 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) const {
 template <typename N, typename E>
 std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dest) const {
   if (this->IsNode(src) == false) {
-    stringstream ss;
+    std::stringstream ss;
     ss << "Cannot call Graph::GetWeights if src or dst node don't exist in "
           "the graph";
     throw std::runtime_error(ss.str());
   }
-  vector<E> result;
-  const shared_ptr<const Node> temp_src_node = this->getNode(src);
+  std::vector<E> result;
+  const std::shared_ptr<const Node> temp_src_node = this->getNode(src);
   for (auto& it : (*temp_src_node).outgoing_) {
-    const shared_ptr<const N> temp_dest_node_name = this->get_dest_N_ptr_from_edge(it);
+    const std::shared_ptr<const N> temp_dest_node_name = this->get_dest_N_ptr_from_edge(it);
     if (*temp_dest_node_name == dest) {
       result.push_back((*it).weight_);
     }
@@ -278,7 +288,7 @@ std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dest) const 
 template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator
 gdwg::Graph<N, E>::find(const N& src, const N& dest, const E& weight) const {
-  shared_ptr<Edge> temp_edge = this->makeEdge(src, dest, weight);
+  std::shared_ptr<Edge> temp_edge = this->makeEdge(src, dest, weight);
   auto result = this->edges_.find(temp_edge);
   if (result != this->edges_.end()) {
     return gdwg::Graph<N, E>::const_iterator(*this, result, this->edges_.end());
@@ -292,8 +302,8 @@ bool gdwg::Graph<N, E>::erase(const N& src, const N& dest, const E& w) {
   if (it == this->end()) {
     return false;
   }
-  shared_ptr<Node> temp_src_node = this->getNode(src);
-  shared_ptr<Node> temp_dest_node = this->getNode(dest);
+  std::shared_ptr<Node> temp_src_node = this->getNode(src);
+  std::shared_ptr<Node> temp_dest_node = this->getNode(dest);
   (*temp_src_node).outgoing_.erase((*it).lock());
   (*temp_dest_node).incoming_.erase((*it).lock());
   this->edges_.erase(*it);
@@ -303,8 +313,8 @@ bool gdwg::Graph<N, E>::erase(const N& src, const N& dest, const E& w) {
 template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator
 gdwg::Graph<N, E>::erase(gdwg::Graph<N, E>::const_iterator& it) {
-  shared_ptr<N> temp_src_node_name = this->get_src_N_ptr_from_edge((*it).lock());
-  shared_ptr<N> temp_dest_node_name = this->get_dest_N_ptr_from_edge((*it).lock());
+  std::shared_ptr<N> temp_src_node_name = this->get_src_N_ptr_from_edge((*it).lock());
+  std::shared_ptr<N> temp_dest_node_name = this->get_dest_N_ptr_from_edge((*it).lock());
   auto next = ++gdwg::Graph<N, E>::const_iterator(it);
   this->erase(*temp_src_node_name, *temp_dest_node_name, (*it).lock()->weight_);
   return next;

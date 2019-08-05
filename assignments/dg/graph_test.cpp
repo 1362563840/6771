@@ -2,9 +2,9 @@
 
   == Explanation and rational of testing ==
 
-  Explain and justify how you approached testing, the degree
-   to which you're certain you have covered all possibilities,
-   and why you think your tests are that thorough.
+  For this assignment, the test is complicated as the test of a method may require the call of other
+  methods. We need to firstly ensure some basic methods are right. For some boolean methods, we test
+  whether it is called successfully. If it has the exception, we also test the throw of it.
 
 */
 
@@ -90,6 +90,85 @@ SCENARIO("Delete a node") {
     THEN("Delete the node") {
       REQUIRE(g.DeleteNode(node) == true);
       REQUIRE(g.IsNode(node) == false);
+    }
+  }
+}
+
+SCENARIO("Delete a node which does not exist") {
+  WHEN("You have a graph") {
+    gdwg::Graph<std::string, double> g;
+    THEN("Delete a node") { REQUIRE(g.DeleteNode("hello") == false); }
+  }
+}
+
+SCENARIO("Replace a node") {
+  WHEN("You have a graph having a node") {
+    gdwg::Graph<std::string, double> g;
+    std::string node = "hello";
+    g.InsertNode(node);
+    THEN("Replace the node") { REQUIRE(g.Replace(node, "world") == true); }
+  }
+}
+
+SCENARIO("Replace a node with an existed node") {
+  WHEN("You have a graph having a node") {
+    gdwg::Graph<std::string, double> g;
+    std::string node = "hello";
+    g.InsertNode(node);
+    THEN("Replace the node with the same one") { REQUIRE(g.Replace(node, "hello") == false); }
+  }
+}
+
+SCENARIO("Replace a non-existed node") {
+  WHEN("You have a graph") {
+    gdwg::Graph<std::string, double> g;
+    THEN("Replace the non-existed node") {
+      REQUIRE_THROWS_WITH(g.Replace("hello", "world"),
+                          "Cannot call Graph::Replace on a node that doesn't exist");
+    }
+  }
+}
+
+SCENARIO("MergeReplace a node") {
+  WHEN("You have a graph having some nodes") {
+    gdwg::Graph<std::string, double> g;
+    g.InsertNode("A");
+    g.InsertNode("B");
+    g.InsertNode("C");
+    g.InsertEdge("A", "B", 5);
+    g.InsertEdge("B", "A", 3);
+    g.InsertEdge("C", "A", 1);
+    THEN("Replace the node A with the node B") {
+      g.MergeReplace("A", "B");
+      REQUIRE(g.IsNode("A") == false);
+      REQUIRE_THROWS_WITH(
+          g.IsConnected("A", "B"),
+          "Cannot call Graph::IsConnected if src or dst node don't exist in the graph");
+      REQUIRE(g.GetNodes().front() == "B");
+      REQUIRE(g.GetNodes().size() == 2);
+      REQUIRE(g.GetConnected("B").front() == "B");
+      REQUIRE(g.GetWeights("B", "B").front() == 3);
+    }
+  }
+}
+
+SCENARIO("MergeReplace a node, duplicate edges removed") {
+  WHEN("You have a graph having some nodes") {
+    gdwg::Graph<std::string, double> g;
+    g.InsertNode("A");
+    g.InsertNode("B");
+    g.InsertNode("C");
+    g.InsertNode("D");
+    g.InsertEdge("A", "B", 1);
+    g.InsertEdge("A", "C", 2);
+    g.InsertEdge("A", "D", 3);
+    g.InsertEdge("B", "B", 1);
+    THEN("Replace the node A with the node B") {
+      g.MergeReplace("A", "B");
+      REQUIRE(g.IsNode("A") == false);
+      REQUIRE(g.GetConnected("B").front() == "B");
+      REQUIRE(g.GetConnected("B").size() == 3);
+      REQUIRE(g.GetWeights("B", "B").size() == 1);
     }
   }
 }
