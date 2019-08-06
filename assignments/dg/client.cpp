@@ -13,4 +13,6 @@ int main() {
   auto it = std::vector<std::tuple<std::string, std::string, double>>{t1, t2, t3, t4};
   gdwg::Graph<std::string, double> g{it.begin(), it.end()};
   g.erase("A", "B", 2);
+  bool c = g.IsConnected("A", "B");
+  std::cout << c << std::endl;
 }

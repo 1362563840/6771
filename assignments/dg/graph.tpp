@@ -26,7 +26,7 @@ gdwg::Graph<N, E>::Graph(typename std::vector<std::tuple<N, N, E>>::const_iterat
 }
 
 template <typename N, typename E>
-gdwg::Graph<N, E>::Graph(const typename std::initializer_list<N> list) {
+gdwg::Graph<N, E>::Graph(typename std::initializer_list<N> list) {
   for (auto it : list) {
     this->InsertNode(it);
   }
@@ -314,7 +314,6 @@ bool gdwg::Graph<N, E>::erase(const N& src, const N& dest, const E& w) {
   std::shared_ptr<Edge> temp_edge = this->makeEdge( src, dest, w );
   (*temp_src_node).outgoing_.erase( temp_edge );
   (*temp_dest_node).incoming_.erase( temp_edge );
-  this->edges_.erase( temp_edge );
   return true;
 }
 
@@ -322,9 +321,7 @@ template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator
 gdwg::Graph<N, E>::erase(gdwg::Graph<N, E>::const_iterator& it) {
   std::tuple<N, N, E> tuple_edge = *it;
-  // std::shared_ptr<N> temp_src_node_name = this->get_src_N_ptr_from_edge((*it).lock());
-  // std::shared_ptr<N> temp_dest_node_name = this->get_dest_N_ptr_from_edge((*it).lock());
-  // auto next = ++gdwg::Graph<N, E>::const_iterator(it);
+  auto next = it++;
   this->erase( std::get<0>(tuple_edge), std::get<1>(tuple_edge), std::get<2>(tuple_edge) );
   return next;
 }

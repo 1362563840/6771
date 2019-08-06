@@ -220,7 +220,7 @@ class Graph {
   Graph(typename std::vector<N>::const_iterator start, typename std::vector<N>::const_iterator end);
   Graph(typename std::vector<std::tuple<N, N, E>>::const_iterator start,
         typename std::vector<std::tuple<N, N, E>>::const_iterator end);
-  Graph(const typename std::initializer_list<N> list);
+  Graph(typename std::initializer_list<N> list);
   explicit Graph(const typename gdwg::Graph<N, E>& graph);
   explicit Graph(typename gdwg::Graph<N, E>&& other);
 
