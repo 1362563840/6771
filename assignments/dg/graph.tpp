@@ -312,6 +312,7 @@ bool gdwg::Graph<N, E>::erase(const N& src, const N& dest, const E& w) {
   std::shared_ptr<Node> temp_src_node = this->getNode(src);
   std::shared_ptr<Node> temp_dest_node = this->getNode(dest);
   std::shared_ptr<Edge> temp_edge = this->makeEdge( src, dest, w );
+  this->edges_.erase( temp_edge );
   (*temp_src_node).outgoing_.erase( temp_edge );
   (*temp_dest_node).incoming_.erase( temp_edge );
   return true;
