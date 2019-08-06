@@ -485,6 +485,10 @@ class Graph {
     }
   };
 
+  /**
+   * this->edges_ need to be deleted first before deleting outcoming_, incoming_, otherwise, 
+   * lock() will throw error
+   */
   struct EdgeComparator_weak {
     bool operator()(const std::weak_ptr<Edge>& lhs, const std::weak_ptr<Edge>& rhs) const {
       const std::shared_ptr<Edge> _lhs = lhs.lock();
