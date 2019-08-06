@@ -51,7 +51,7 @@ gdwg::Graph<N, E>::Graph(const typename gdwg::Graph<N, E>& other) {
 }
 
 template <typename N, typename E>
-gdwg::Graph<N, E>::Graph(typename gdwg::Graph<N, E>&& other)
+gdwg::Graph<N, E>::Graph(typename gdwg::Graph<N, E>&& other) noexcept
   : nodes_{other.nodes_}, edges_{other.edges_} {
   other.nodes_.clear();
   other.edges_.clear();
@@ -338,7 +338,7 @@ gdwg::Graph<N, E>::erase(gdwg::Graph<N, E>::const_iterator& it) {
 
 template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator
-gdwg::Graph<N, E>::erase(gdwg::Graph<N, E>::const_iterator&& it) {
+gdwg::Graph<N, E>::erase(gdwg::Graph<N, E>::const_iterator&& it) noexcept {
   if (it.sameContainer(*this) == false) {
     return this->end();
   }

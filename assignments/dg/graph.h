@@ -265,7 +265,7 @@ class Graph {
   /*
    * Move Constructor
    */
-  explicit Graph(typename gdwg::Graph<N, E>&& other);
+  explicit Graph(typename gdwg::Graph<N, E>&& other) noexcept;
 
   /*
    * Destructor
@@ -355,7 +355,7 @@ class Graph {
    * Removes the position at the location the iterator points to.
    */
   gdwg::Graph<N, E>::const_iterator erase(gdwg::Graph<N, E>::const_iterator& it);
-  gdwg::Graph<N, E>::const_iterator erase(gdwg::Graph<N, E>::const_iterator&& it);
+  gdwg::Graph<N, E>::const_iterator erase(gdwg::Graph<N, E>::const_iterator&& it) noexcept;
 
   /*
    * Returns a const_iterator pointing to the first in the container.
@@ -485,10 +485,6 @@ class Graph {
     }
   };
 
-  /**
-   * this->edges_ need to be deleted first before deleting outcoming_, incoming_, otherwise, 
-   * lock() will throw error
-   */
   struct EdgeComparator_weak {
     bool operator()(const std::weak_ptr<Edge>& lhs, const std::weak_ptr<Edge>& rhs) const {
       const std::shared_ptr<Edge> _lhs = lhs.lock();

@@ -3,9 +3,9 @@
   == Explanation and rational of testing ==
 
   For this assignment, the test is complicated as the test of a method may require the call of other
-  methods. We need to firstly ensure some basic methods are right. For some boolean methods, we test
-  whether it is called successfully. If it has the exception, we also test the throw of it. We will
-  also test the iterator to ensure the basic operations working.
+  methods. We need to firstly ensure some basic methods are right. We will also test the iterator to
+  ensure the basic operations working. For some boolean methods, we test whether it is called
+  successfully. If it has the exception, we also test the throw of it.
 
 */
 
@@ -145,7 +145,7 @@ SCENARIO("Test the const iterator order and find") {
   }
 }
 
-SCENARIO("Test the remove of the iterator") {
+SCENARIO("Test the erase of the iterator") {
   WHEN("You have a graph") {
     std::vector<std::string> v{"A", "B", "C", "D"};
     gdwg::Graph<std::string, double> g{v.begin(), v.end()};
@@ -428,6 +428,18 @@ SCENARIO("Get connected nodes of a node") {
   }
 }
 
+SCENARIO("Get connected nodes of an only node") {
+  WHEN("You have a graph having only a node") {
+    auto t1 = std::make_tuple("A", "A", 2);
+    auto it = std::vector<std::tuple<std::string, std::string, double>>{t1};
+    gdwg::Graph<std::string, double> g{it.begin(), it.end()};
+    THEN("Get connected nodes of A") {
+      REQUIRE(g.GetConnected("A").front() == "A");
+      REQUIRE(g.GetConnected("A").size() == 1);
+    }
+  }
+}
+
 SCENARIO("Get connected nodes of a non-existed node") {
   WHEN("You have a graph having some nodes") {
     auto t1 = std::make_tuple("A", "B", 2);
@@ -486,9 +498,28 @@ SCENARIO("Erase an edge") {
     auto t4 = std::make_tuple("B", "D", 0.5);
     auto it = std::vector<std::tuple<std::string, std::string, double>>{t1, t2, t3, t4};
     gdwg::Graph<std::string, double> g{it.begin(), it.end()};
-    THEN("Get weight of edge between two nodes") {
+    THEN("Erase an edge between two nodes") {
       REQUIRE(g.erase("A", "B", 2) == true);
+      REQUIRE(g.IsConnected("A", "B") == false);
       REQUIRE(g.erase("A", "B", 2) == false);
+      REQUIRE(g.erase("B", "A", 2) == false);
+      REQUIRE(g.erase("B", "A", 1) == true);
+      REQUIRE(g.IsConnected("B", "A") == false);
+      REQUIRE(g.erase("B", "D", 0.5) == true);
+      REQUIRE(g.IsConnected("B", "D") == false);
+    }
+  }
+}
+
+SCENARIO("Erase a self edge") {
+  WHEN("You have a graph having some nodes") {
+    auto t1 = std::make_tuple("A", "A", 2);
+    auto it = std::vector<std::tuple<std::string, std::string, double>>{t1};
+    gdwg::Graph<std::string, double> g{it.begin(), it.end()};
+    THEN("Erase an edge between nodes") {
+      REQUIRE(g.IsConnected("A", "A") == true);
+      REQUIRE(g.erase("A", "A", 2) == true);
+      REQUIRE(g.IsConnected("A", "A") == false);
     }
   }
 }
