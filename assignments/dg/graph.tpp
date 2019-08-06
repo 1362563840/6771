@@ -337,6 +337,21 @@ gdwg::Graph<N, E>::erase(gdwg::Graph<N, E>::const_iterator& it) {
 }
 
 template <typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator
+gdwg::Graph<N, E>::erase(gdwg::Graph<N, E>::const_iterator&& it) {
+  if( it.sameContainer( *this ) == false ) {
+    return this->end();
+  }
+  if( it == this->end() ){
+    return this->end();
+  }
+  std::tuple<N, N, E> tuple_edge = *it;
+  auto next = it++;
+  this->erase( std::get<0>(tuple_edge), std::get<1>(tuple_edge), std::get<2>(tuple_edge) );
+  return next;
+}
+
+template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
   return gdwg::Graph<N, E>::const_iterator(*this, this->edges_.begin(), this->edges_.end());
 }

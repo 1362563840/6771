@@ -48,6 +48,10 @@ class Graph {
     const_iterator(const const_iterator& another)
       : container_{another.container_}, curr_{another.curr_}, end_{another.end_},
         increment_{another.increment_} {}
+    
+    const_iterator(const const_iterator&& another) : container_{std::move(another.container_)}, 
+                                curr_{std::move(another.curr_)}, end_{std::move(another.end_)},
+                                increment_{std::move(another.increment_)} {}
 
     reference operator*() const {
       std::shared_ptr<N> temp_src_node_name =
@@ -147,6 +151,10 @@ class Graph {
     const_reverse_iterator(const const_reverse_iterator& another)
       : container_{another.container_}, curr_{another.curr_}, end_{another.end_},
         increment_{another.increment_} {}
+
+    const_reverse_iterator(const const_reverse_iterator&& another) : container_{std::move(another.container_)}, 
+                                curr_{std::move(another.curr_)}, end_{std::move(another.end_)},
+                                increment_{std::move(another.increment_)} {}
 
     reference operator*() const {
       std::shared_ptr<N> temp_src_node_name =
@@ -250,6 +258,7 @@ class Graph {
   gdwg::Graph<N, E>::const_iterator find(const N& src, const N& dest, const E& weight) const;
   bool erase(const N& src, const N& dest, const E& w);
   gdwg::Graph<N, E>::const_iterator erase(gdwg::Graph<N, E>::const_iterator& it);
+  gdwg::Graph<N, E>::const_iterator erase(gdwg::Graph<N, E>::const_iterator&& it);
   gdwg::Graph<N, E>::const_iterator cbegin() const;
   gdwg::Graph<N, E>::const_iterator cend() const;
   gdwg::Graph<N, E>::const_reverse_iterator crbegin() const;
