@@ -52,7 +52,7 @@ class Graph {
       : container_{another.container_}, curr_{another.curr_}, end_{another.end_},
         increment_{another.increment_} {}
 
-    const_iterator(const const_iterator&& another)
+    const_iterator(const const_iterator&& another) noexcept
       : container_{std::move(another.container_)}, curr_{std::move(another.curr_)},
         end_{std::move(another.end_)}, increment_{std::move(another.increment_)} {}
 
@@ -158,7 +158,7 @@ class Graph {
       : container_{another.container_}, curr_{another.curr_}, end_{another.end_},
         increment_{another.increment_} {}
 
-    const_reverse_iterator(const const_reverse_iterator&& another)
+    const_reverse_iterator(const const_reverse_iterator&& another) noexcept
       : container_{std::move(another.container_)}, curr_{std::move(another.curr_)},
         end_{std::move(another.end_)}, increment_{std::move(another.increment_)} {}
 
