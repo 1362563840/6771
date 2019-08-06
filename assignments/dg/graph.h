@@ -100,7 +100,7 @@ class Graph {
       return temp;
     }
 
-    bool sameContainer(const typename gdwg::Graph<N, E>& another) {
+    bool sameContainer(const typename gdwg::Graph<N, E>& another) const {
       if (&(this->container_) != &another) {
         return false;
       } else {
@@ -206,7 +206,7 @@ class Graph {
       return temp;
     }
 
-    bool sameContainer(const typename gdwg::Graph<N, E>& another) {
+    bool sameContainer(const typename gdwg::Graph<N, E>& another) const {
       if (&(this->container_) != &another) {
         return false;
       } else {
