@@ -645,7 +645,7 @@ SCENARIO("Move assignment") {
   }
 }
 
-SCENARIO("Two identical graphs") {
+SCENARIO("Identical graphs") {
   WHEN("You have two identical graphs") {
     auto t1 = std::make_tuple("A", "B", 2);
     auto t2 = std::make_tuple("B", "C", 2.5);
@@ -657,7 +657,12 @@ SCENARIO("Two identical graphs") {
     g2.InsertNode("C");
     g2.InsertEdge("A", "B", 2);
     g2.InsertEdge("B", "C", 2.5);
-    THEN("Compare two graphs") { REQUIRE(g1 == g2); }
+    THEN("Compare two graphs") {
+      REQUIRE(g1 == g2);
+      g1.erase("A", "B", 2);
+      g2.erase("A", "B", 2);
+      REQUIRE(g1 == g2);
+    }
   }
 }
 
@@ -674,5 +679,44 @@ SCENARIO("Two different graphs") {
     g2.InsertEdge("A", "B", 3);
     g2.InsertEdge("B", "C", 2.5);
     THEN("Compare two graphs") { REQUIRE(g1 != g2); }
+  }
+}
+
+SCENARIO("Compare multiple graphs constructed by different constructors") {
+  WHEN("You have two graphs") {
+    auto t1 = std::make_tuple("A", "B", 2);
+    auto t2 = std::make_tuple("B", "C", 2.5);
+    auto it = std::vector<std::tuple<std::string, std::string, double>>{t1, t2};
+    const gdwg::Graph<std::string, double> g1{it.begin(), it.end()};
+    gdwg::Graph<std::string, double> g2;
+    g2.InsertNode("A");
+    g2.InsertNode("B");
+    g2.InsertNode("C");
+    g2.InsertEdge("A", "B", 3);
+    g2.InsertEdge("B", "C", 2.5);
+    gdwg::Graph<std::string, double> g3{"A", "B", "C"};
+    g3.InsertEdge("A", "B", 3);
+    g3.InsertEdge("B", "C", 2.5);
+    std::vector<std::string> v{"A", "B", "C"};
+    gdwg::Graph<std::string, double> g4{v.begin(), v.end()};
+    g4.InsertEdge("A", "B", 2);
+    g4.InsertEdge("B", "C", 2.5);
+    gdwg::Graph<std::string, double> g5;
+    g5 = g1;
+    gdwg::Graph<std::string, double> g6{g3};
+    THEN("Compare multiple graphs") {
+      REQUIRE(g2 != g1);
+      REQUIRE(g3 != g1);
+      REQUIRE(g3 == g2);
+      REQUIRE(g4 == g1);
+      REQUIRE(g4 != g2);
+      REQUIRE(g5 == g1);
+      REQUIRE(g5 == g4);
+      REQUIRE(g6 != g1);
+      REQUIRE(g6 == g2);
+      REQUIRE(g6 == g3);
+      REQUIRE(g6 != g4);
+      REQUIRE(g6 != g5);
+    }
   }
 }
