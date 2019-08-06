@@ -321,10 +321,11 @@ bool gdwg::Graph<N, E>::erase(const N& src, const N& dest, const E& w) {
 template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator
 gdwg::Graph<N, E>::erase(gdwg::Graph<N, E>::const_iterator& it) {
-  std::shared_ptr<N> temp_src_node_name = this->get_src_N_ptr_from_edge((*it).lock());
-  std::shared_ptr<N> temp_dest_node_name = this->get_dest_N_ptr_from_edge((*it).lock());
-  auto next = ++gdwg::Graph<N, E>::const_iterator(it);
-  this->erase(*temp_src_node_name, *temp_dest_node_name, (*it).lock()->weight_);
+  std::tuple<N, N, E> tuple_edge = *it;
+  // std::shared_ptr<N> temp_src_node_name = this->get_src_N_ptr_from_edge((*it).lock());
+  // std::shared_ptr<N> temp_dest_node_name = this->get_dest_N_ptr_from_edge((*it).lock());
+  // auto next = ++gdwg::Graph<N, E>::const_iterator(it);
+  this->erase( std::get<0>(tuple_edge), std::get<1>(tuple_edge), std::get<2>(tuple_edge) );
   return next;
 }
 
