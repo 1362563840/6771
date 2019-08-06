@@ -295,6 +295,9 @@ std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dest) const 
 template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator
 gdwg::Graph<N, E>::find(const N& src, const N& dest, const E& weight) const {
+  if( this->IsNode(src) == false || this->IsNode(dest) == false ) {
+    return this->end();
+  }
   std::shared_ptr<Edge> temp_edge = this->makeEdge(src, dest, weight);
   auto result = this->edges_.find(temp_edge);
   if (result != this->edges_.end()) {
@@ -321,6 +324,12 @@ bool gdwg::Graph<N, E>::erase(const N& src, const N& dest, const E& w) {
 template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator
 gdwg::Graph<N, E>::erase(gdwg::Graph<N, E>::const_iterator& it) {
+  if( it.sameContainer( *this ) == false ) {
+    return this->end();
+  }
+  if( it == this->end() ){
+    return this->end();
+  }
   std::tuple<N, N, E> tuple_edge = *it;
   auto next = it++;
   this->erase( std::get<0>(tuple_edge), std::get<1>(tuple_edge), std::get<2>(tuple_edge) );
