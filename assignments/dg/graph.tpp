@@ -33,14 +33,14 @@ gdwg::Graph<N, E>::Graph(typename std::initializer_list<N> list) {
 }
 
 template <typename N, typename E>
-gdwg::Graph<N, E>::Graph(const typename gdwg::Graph<N, E>& graph) {
-  for (auto& it : graph.nodes_) {
+gdwg::Graph<N, E>::Graph(const typename gdwg::Graph<N, E>& other) {
+  for (auto& it : other.nodes_) {
     std::shared_ptr<N> temp_N_ptr = std::make_shared<N>(*(it.first));
     std::shared_ptr<Node> temp_Node_ptr = std::make_shared<Node>(temp_N_ptr);
     this->nodes_.emplace(temp_N_ptr, temp_Node_ptr);
   }
 
-  for (auto& it : graph.edges_) {
+  for (auto& it : other.edges_) {
     std::shared_ptr<Edge> new_edge = copyEdge(it.lock());
     std::shared_ptr<Node> temp_src_node = getNodePassedByNode((*new_edge).src_.lock());
     std::shared_ptr<Node> temp_dest_node = getNodePassedByNode((*new_edge).dest_.lock());
@@ -295,7 +295,7 @@ std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dest) const 
 template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator
 gdwg::Graph<N, E>::find(const N& src, const N& dest, const E& weight) const {
-  if( this->IsNode(src) == false || this->IsNode(dest) == false ) {
+  if (this->IsNode(src) == false || this->IsNode(dest) == false) {
     return this->end();
   }
   std::shared_ptr<Edge> temp_edge = this->makeEdge(src, dest, weight);
@@ -314,40 +314,40 @@ bool gdwg::Graph<N, E>::erase(const N& src, const N& dest, const E& w) {
   }
   std::shared_ptr<Node> temp_src_node = this->getNode(src);
   std::shared_ptr<Node> temp_dest_node = this->getNode(dest);
-  std::shared_ptr<Edge> temp_edge = this->makeEdge( src, dest, w );
-  this->edges_.erase( temp_edge );
-  (*temp_src_node).outgoing_.erase( temp_edge );
-  (*temp_dest_node).incoming_.erase( temp_edge );
+  std::shared_ptr<Edge> temp_edge = this->makeEdge(src, dest, w);
+  this->edges_.erase(temp_edge);
+  (*temp_src_node).outgoing_.erase(temp_edge);
+  (*temp_dest_node).incoming_.erase(temp_edge);
   return true;
 }
 
 template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator
 gdwg::Graph<N, E>::erase(gdwg::Graph<N, E>::const_iterator& it) {
-  if( it.sameContainer( *this ) == false ) {
+  if (it.sameContainer(*this) == false) {
     return this->end();
   }
-  if( it == this->end() ){
+  if (it == this->end()) {
     return this->end();
   }
   std::tuple<N, N, E> tuple_edge = *it;
   auto next = it++;
-  this->erase( std::get<0>(tuple_edge), std::get<1>(tuple_edge), std::get<2>(tuple_edge) );
+  this->erase(std::get<0>(tuple_edge), std::get<1>(tuple_edge), std::get<2>(tuple_edge));
   return next;
 }
 
 template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator
 gdwg::Graph<N, E>::erase(gdwg::Graph<N, E>::const_iterator&& it) {
-  if( it.sameContainer( *this ) == false ) {
+  if (it.sameContainer(*this) == false) {
     return this->end();
   }
-  if( it == this->end() ){
+  if (it == this->end()) {
     return this->end();
   }
   std::tuple<N, N, E> tuple_edge = *it;
   auto next = it++;
-  this->erase( std::get<0>(tuple_edge), std::get<1>(tuple_edge), std::get<2>(tuple_edge) );
+  this->erase(std::get<0>(tuple_edge), std::get<1>(tuple_edge), std::get<2>(tuple_edge));
   return next;
 }
 

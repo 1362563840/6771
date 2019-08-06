@@ -26,6 +26,9 @@ class Graph {
   struct Node;
 
  public:
+  /*
+   * A const iterator class
+   */
   class const_iterator {
    public:
     typedef typename gdwg::Graph<N, E>::Edge Edge;
@@ -48,10 +51,10 @@ class Graph {
     const_iterator(const const_iterator& another)
       : container_{another.container_}, curr_{another.curr_}, end_{another.end_},
         increment_{another.increment_} {}
-    
-    const_iterator(const const_iterator&& another) : container_{std::move(another.container_)}, 
-                                curr_{std::move(another.curr_)}, end_{std::move(another.end_)},
-                                increment_{std::move(another.increment_)} {}
+
+    const_iterator(const const_iterator&& another)
+      : container_{std::move(another.container_)}, curr_{std::move(another.curr_)},
+        end_{std::move(another.end_)}, increment_{std::move(another.increment_)} {}
 
     reference operator*() const {
       std::shared_ptr<N> temp_src_node_name =
@@ -97,10 +100,10 @@ class Graph {
       return temp;
     }
 
-    bool sameContainer( const typename gdwg::Graph<N, E>& another ) {
-      if( &(this->container_) != &another ) {
+    bool sameContainer(const typename gdwg::Graph<N, E>& another) {
+      if (&(this->container_) != &another) {
         return false;
-      }else {
+      } else {
         return true;
       }
     }
@@ -127,6 +130,9 @@ class Graph {
     int increment_;
   };
 
+  /*
+   * A const reverse iterator class
+   */
   class const_reverse_iterator {
    public:
     typedef typename gdwg::Graph<N, E>::Edge Edge;
@@ -152,9 +158,9 @@ class Graph {
       : container_{another.container_}, curr_{another.curr_}, end_{another.end_},
         increment_{another.increment_} {}
 
-    const_reverse_iterator(const const_reverse_iterator&& another) : container_{std::move(another.container_)}, 
-                                curr_{std::move(another.curr_)}, end_{std::move(another.end_)},
-                                increment_{std::move(another.increment_)} {}
+    const_reverse_iterator(const const_reverse_iterator&& another)
+      : container_{std::move(another.container_)}, curr_{std::move(another.curr_)},
+        end_{std::move(another.end_)}, increment_{std::move(another.increment_)} {}
 
     reference operator*() const {
       std::shared_ptr<N> temp_src_node_name =
@@ -200,10 +206,10 @@ class Graph {
       return temp;
     }
 
-    bool sameContainer( const typename gdwg::Graph<N, E>& another ) {
-      if( &(this->container_) != &another ) {
+    bool sameContainer(const typename gdwg::Graph<N, E>& another) {
+      if (&(this->container_) != &another) {
         return false;
-      }else {
+      } else {
         return true;
       }
     }
@@ -230,44 +236,170 @@ class Graph {
     int increment_;
   };
 
+  /*
+   * Default constructor
+   */
   Graph() = default;
+
+  /*
+   * Constructor which takes the start and end of a const_iterator
+   */
   Graph(typename std::vector<N>::const_iterator start, typename std::vector<N>::const_iterator end);
+
+  /*
+   * Constructor which takes iterators over tuples
+   */
   Graph(typename std::vector<std::tuple<N, N, E>>::const_iterator start,
         typename std::vector<std::tuple<N, N, E>>::const_iterator end);
+
+  /*
+   * Constructor which takes an initialized list
+   */
   Graph(typename std::initializer_list<N> list);
-  explicit Graph(const typename gdwg::Graph<N, E>& graph);
+
+  /*
+   * Copy Constructor
+   */
+  explicit Graph(const typename gdwg::Graph<N, E>& other);
+
+  /*
+   * Move Constructor
+   */
   explicit Graph(typename gdwg::Graph<N, E>&& other);
 
+  /*
+   * Destructor
+   */
   ~Graph() = default;
 
+  /*
+   * Copy Assignment
+   */
   Graph<N, E>& operator=(const typename gdwg::Graph<N, E>& rhs);
+
+  /*
+   * Move Assignment
+   */
   Graph<N, E>& operator=(gdwg::Graph<N, E>&& rhs) noexcept;
 
+  /*
+   * Adds a new node with value val to the graph.
+   */
   bool InsertNode(const N& val);
+
+  /*
+   * Adds a new edge src → dst with weight w.
+   */
   bool InsertEdge(const N& src, const N& dest, const E& w);
+
+  /*
+   * Deletes a given node and all its associated incoming and outgoing edges.
+   */
   bool DeleteNode(const N& val);
+
+  /*
+   * Replaces the original data, oldData, stored at this particular node by the replacement data,
+   * newData.
+   */
   bool Replace(const N& oldData, const N& newData);
+
+  /*
+   * All instances of node oldData in the graph are replaced with instances of newData.
+   */
   void MergeReplace(const N& oldData, const N& newData);
+
+  /*
+   * Remove all nodes and edges from the graph.
+   */
   void Clear();
+
+  /*
+   * Returns true if a node with value val exists in the graph and false otherwise.
+   */
   bool IsNode(const N& val) const;
+
+  /*
+   * Returns true if the edge src → dst exists in the graph and false otherwise.
+   */
   bool IsConnected(const N& src, const N& dest) const;
+
+  /*
+   * Returns a vector of all nodes in the graph. Sorted by increasing order of node.
+   */
   std::vector<N> GetNodes() const;
+
+  /*
+   * Returns a vector of the nodes (found from any immediate outgoing edge) connected to the src
+   * node passed in.
+   */
   std::vector<N> GetConnected(const N& src) const;
+
+  /*
+   * Returns a vector of the weights of edges between two nodes.
+   */
   std::vector<E> GetWeights(const N& src, const N& dest) const;
 
+  /*
+   * Returns an iterator to the found edge in the graph.
+   * If the edge is not found the equivalent value of gdwg::Graph<N, E>::cend() is returned.
+   */
   gdwg::Graph<N, E>::const_iterator find(const N& src, const N& dest, const E& weight) const;
+
+  /*
+   * Deletes an edge from src to dst with weight w, only if the edge exists in the graph.
+   * If the edge is not in the graph it returns false.
+   */
   bool erase(const N& src, const N& dest, const E& w);
+
+  /*
+   * Removes the position at the location the iterator points to.
+   */
   gdwg::Graph<N, E>::const_iterator erase(gdwg::Graph<N, E>::const_iterator& it);
   gdwg::Graph<N, E>::const_iterator erase(gdwg::Graph<N, E>::const_iterator&& it);
+
+  /*
+   * Returns a const_iterator pointing to the first in the container.
+   */
   gdwg::Graph<N, E>::const_iterator cbegin() const;
+
+  /*
+   * Returns a const_iterator pointing to the past-the-end element in the container.
+   */
   gdwg::Graph<N, E>::const_iterator cend() const;
+
+  /*
+   * Returns a const_reverse_iterator pointing to the last element in the container.
+   */
   gdwg::Graph<N, E>::const_reverse_iterator crbegin() const;
+
+  /*
+   * Returns a const_reverse_iterator pointing to the before-the-first element in the container.
+   */
   gdwg::Graph<N, E>::const_reverse_iterator crend() const;
+
+  /*
+   * Exactly the same as cbegin()
+   */
   gdwg::Graph<N, E>::const_iterator begin() const;
+
+  /*
+   * Exactly the same as cend()
+   */
   gdwg::Graph<N, E>::const_iterator end() const;
+
+  /*
+   * Exactly the same as crbegin()
+   */
   gdwg::Graph<N, E>::const_reverse_iterator rbegin() const;
+
+  /*
+   * Exactly the same as crend()
+   */
   gdwg::Graph<N, E>::const_reverse_iterator rend() const;
 
+  /*
+   * True if the two graphs contain the same nodes and edges.
+   */
   friend bool operator==(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) {
     if (lhs.nodes_.size() != rhs.nodes_.size() || lhs.edges_.size() != rhs.edges_.size()) {
       return false;
@@ -303,10 +435,16 @@ class Graph {
     return true;
   }
 
+  /*
+   * True if the two graphs do not contain the same nodes or edges.
+   */
   friend bool operator!=(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) {
     return !(lhs == rhs);
   }
 
+  /*
+   * Prints out the graph
+   */
   friend std::ostream& operator<<(std::ostream& out, const gdwg::Graph<N, E>& graph) {
     for (auto& it : graph.nodes_) {
       std::shared_ptr<Node> temp_src_node = it.second;

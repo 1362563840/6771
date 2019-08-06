@@ -157,7 +157,7 @@ SCENARIO("Test the remove of the iterator") {
     THEN("Get the iterator to different position") {
       auto AB = g.find("A", "B", 2.5);
       auto BB = g.find("B", "B", 1.5);
-//      auto CB = g.find("C", "B", 2);
+      auto CB = g.find("C", "B", 2);
       auto AC = g.find("A", "C", 1.5);
       auto AD = g.find("A", "D", 1.5);
       auto curr = g.cbegin();
@@ -168,6 +168,10 @@ SCENARIO("Test the remove of the iterator") {
       REQUIRE(curr == AD);
       g.erase(curr);
       REQUIRE(curr == BB);
+      g.erase(curr);
+      REQUIRE(curr == CB);
+      g.erase(curr);
+      REQUIRE(curr == g.end());
     }
   }
 }
@@ -333,6 +337,29 @@ SCENARIO("MergeReplace a node, duplicate edges removed") {
   }
 }
 
+SCENARIO("MergeReplace a non-existed node") {
+  WHEN("You have a graph having some nodes") {
+    gdwg::Graph<std::string, double> g;
+    g.InsertNode("A");
+    g.InsertNode("B");
+    g.InsertNode("C");
+    g.InsertEdge("A", "B", 5);
+    g.InsertEdge("B", "A", 3);
+    g.InsertEdge("C", "A", 1);
+    THEN("Replace the node") {
+      REQUIRE_THROWS_WITH(
+          g.MergeReplace("A", "D"),
+          "Cannot call Graph::MergeReplace on old or new data if they don't exist in the graph");
+      REQUIRE_THROWS_WITH(
+          g.MergeReplace("E", "A"),
+          "Cannot call Graph::MergeReplace on old or new data if they don't exist in the graph");
+      REQUIRE_THROWS_WITH(
+          g.MergeReplace("E", "D"),
+          "Cannot call Graph::MergeReplace on old or new data if they don't exist in the graph");
+    }
+  }
+}
+
 SCENARIO("Clear all nodes and edges from the graph") {
   WHEN("You have a graph having some nodes") {
     gdwg::Graph<std::string, double> g;
@@ -451,20 +478,20 @@ SCENARIO("Get weight of edge between non-existed nodes") {
   }
 }
 
-// SCENARIO("Erase an edge") {
-//  WHEN("You have a graph having some nodes") {
-//    auto t1 = std::make_tuple("A", "B", 2);
-//    auto t2 = std::make_tuple("B", "C", 2.5);
-//    auto t3 = std::make_tuple("B", "A", 1);
-//    auto t4 = std::make_tuple("B", "D", 0.5);
-//    auto it = std::vector<std::tuple<std::string, std::string, double>>{t1, t2, t3, t4};
-//    gdwg::Graph<std::string, double> g{it.begin(), it.end()};
-//    THEN("Get weight of edge between two nodes") {
-//      REQUIRE(g.erase("A", "B", 2) == true);
-//      REQUIRE(g.erase("A", "B", 2) == false);
-//    }
-//  }
-//}
+SCENARIO("Erase an edge") {
+  WHEN("You have a graph having some nodes") {
+    auto t1 = std::make_tuple("A", "B", 2);
+    auto t2 = std::make_tuple("B", "C", 2.5);
+    auto t3 = std::make_tuple("B", "A", 1);
+    auto t4 = std::make_tuple("B", "D", 0.5);
+    auto it = std::vector<std::tuple<std::string, std::string, double>>{t1, t2, t3, t4};
+    gdwg::Graph<std::string, double> g{it.begin(), it.end()};
+    THEN("Get weight of edge between two nodes") {
+      REQUIRE(g.erase("A", "B", 2) == true);
+      REQUIRE(g.erase("A", "B", 2) == false);
+    }
+  }
+}
 
 SCENARIO("Construct a graph by an iterator over vectors") {
   WHEN("You have the start and the end of an iterator") {
